@@ -10,9 +10,19 @@ A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 - [AWS Serverless Application Model](https://github.com/awslabs/serverless-application-model)
 - [GNU Make](https://www.gnu.org/software/make/)
 
+## Configuration
+
+See [Swift AWS Lambda Runtime Configuration](https://github.com/swift-server/swift-aws-lambda-runtime#configuration).
+
+The can be configured using the `LOG_LEVEL` environment variable
+
 ## Testing locally
 
-Compile and run `HelloWorldAPI` with `XCode`.
+Compile and run `HelloWorldAPI` with `XCode` or in terminal:
+
+```
+$ LOG_LEVEL=debug make run_local
+```
 
 Invoke lambda with `curl`:
 

@@ -4,6 +4,10 @@ AWS_STACK_NAME=swift-aws-lambda-template
 clean:
 	rm -rf .build/lambda
 
+.PHONY: run_local
+run_local:
+	swift run
+
 .PHONY: build_aws
 build_aws:
 	docker run \
