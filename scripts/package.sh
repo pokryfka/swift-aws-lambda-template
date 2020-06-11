@@ -3,9 +3,11 @@
 set -eu
 
 executable=$1
+package="${executable}.zip"
 
 target=.build/lambda/$executable
 rm -rf "$target"
+rm -rf "${target}/../${package}"
 mkdir -p "$target"
 cp ".build/release/$executable" "$target/"
 cp -Pv \
@@ -29,4 +31,4 @@ cp -Pv \
   "$target"
 cd "$target"
 ln -s "$executable" "bootstrap"
-zip --symlinks lambda.zip *
+zip --symlinks ../$package *
