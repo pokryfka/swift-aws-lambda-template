@@ -1,14 +1,18 @@
 # swift-aws-lambda-template
 
-A description of this package.
+A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 
 ## Requirements
 
+- Swift compiler and Swift Package Manager - both included in [XCode](https://developer.apple.com/xcode/)
 - [Docker](https://docs.docker.com/docker-for-mac/install/)
 - [Amazon Web Services Account](https://aws.amazon.com)
 - [AWS Serverless Application Model](https://github.com/awslabs/serverless-application-model)
+- [GNU Make](https://www.gnu.org/software/make/)
 
 ## Testing locally
+
+Compile and run `HelloWorldAPI` with `XCode`.
 
 Invoke lambda with `curl`:
 
@@ -32,40 +36,17 @@ Build docker image:
 $ docker build -t swift-lambda-builder .
 ```
 
-Build the Lambda function for the AWS Lambda Environment:
+Configure the environment:
 
 ```
-$ docker run \
---rm \
---volume "$(pwd)/:/src" \
---workdir "/src/" \
-swift-lambda-builder \
-swift build --product HelloWorldAPI -c release
+$ export AWS_PROFILE=profile_name
+$ export AWS_DEPLOY_BUCKET=bucket_name
 ```
 
-Package the Lambda function:
+Build and deploy:
 
 ```
-$ docker run \
---rm \
---volume "$(pwd)/:/src" \
---workdir "/src/" \
-swift-lambda-builder \
-scripts/package.sh HelloWorldAPI
-```
-
-Create SAM package:
-
-```
-$ sam package --s3-bucket=${AWS_DEPLOY_BUCKET}
-```
- 
-Deploy SAM package:
-
-```
-$ sam deploy --s3-bucket=${AWS_DEPLOY_BUCKET} \
-  --stack-name=swift-aws-lambda-template \
-  --capabilities=CAPABILITY_IAM
+$ make deploy
 ```
 
 ## References
