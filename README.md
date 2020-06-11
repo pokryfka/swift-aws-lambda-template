@@ -64,3 +64,4 @@ $ make deploy
 
 - [Introducing Swift AWS Lambda Runtime](https://swift.org/blog/aws-lambda-runtime) by Tom Dordon
 - [Getting started with Swift on AWS Lambda](https://fabianfett.de/getting-started-with-swift-aws-lambda-runtime) by Fabian Fett
+- [AWS SDK Swift](https://github.com/swift-aws/aws-sdk-swift)
