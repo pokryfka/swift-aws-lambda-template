@@ -6,6 +6,7 @@ A description of this package.
 
 - [Docker](https://docs.docker.com/docker-for-mac/install/)
 - [Amazon Web Services Account](https://aws.amazon.com)
+- [AWS Serverless Application Model](https://github.com/awslabs/serverless-application-model)
 
 ## Testing locally
 
@@ -51,6 +52,20 @@ $ docker run \
 --workdir "/src/" \
 swift-lambda-builder \
 scripts/package.sh HelloWorldAPI
+```
+
+Create SAM package:
+
+```
+$ sam package --s3-bucket=${AWS_DEPLOY_BUCKET}
+```
+ 
+Deploy SAM package:
+
+```
+$ sam deploy --s3-bucket=${AWS_DEPLOY_BUCKET} \
+  --stack-name=swift-aws-lambda-template \
+  --capabilities=CAPABILITY_IAM
 ```
 
 ## References
