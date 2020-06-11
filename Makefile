@@ -4,6 +4,14 @@ AWS_STACK_NAME=swift-aws-lambda-template
 clean:
 	rm -rf .build/lambda
 
+.PHONY: lint
+lint:
+	swift-format lint -r Package.swift Sources Tests
+
+.PHONY: format
+format:
+	swift-format format -i -r Package.swift Sources Tests
+
 .PHONY: run_local
 run_local:
 	swift run

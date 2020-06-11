@@ -9,6 +9,7 @@ A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 - [Amazon Web Services Account](https://aws.amazon.com)
 - [AWS Serverless Application Model](https://github.com/awslabs/serverless-application-model)
 - [GNU Make](https://www.gnu.org/software/make/)
+- [swift-format](https://github.com/apple/swift-format)
 
 ## Configuration
 

@@ -1,5 +1,4 @@
 import XCTest
-
 import swift_aws_lambda_templateTests
 
 var tests = [XCTestCaseEntry]()
