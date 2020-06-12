@@ -1,8 +1,8 @@
-AWS_STACK_NAME=swift-aws-lambda-template
+DEPLOY_PACKAGES=HelloWorldAPI
 
 DOCKER_IMAGE=swift-lambda-builder
-DEPLOY_PACKAGES=HelloWorldAPI
 SWIFT_RUNTIME_LAYER=.build/lambda/swift.zip
+SAM_CONFIG=samconfig.toml
 
 .PHONY: clean
 clean:
@@ -51,6 +51,4 @@ package_all: package_executables package_libs
 
 .PHONY: deploy
 deploy: package_all
-	sam deploy --s3-bucket=${AWS_DEPLOY_BUCKET} \
-	  --stack-name=${AWS_STACK_NAME} \
-	  --capabilities=CAPABILITY_IAM
+	[ -f ${SAM_CONFIG} ] && sam deploy || sam deploy --guided
