@@ -25,6 +25,7 @@ let package = Package(
             dependencies: [
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
+                .product(name: "Backtrace", package: "swift-backtrace"),
                 .byName(name: "HelloWorld"),
             ]
         ),
