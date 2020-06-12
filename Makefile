@@ -25,7 +25,7 @@ run:
 test:
 	swift test
 
-.PHONY: build_docker
+.PHONY: docker_image
 docker_image:
 	docker inspect swift-lambda-builder > /dev/null 2>&1 || docker build -t swift-lambda-builder .
 
