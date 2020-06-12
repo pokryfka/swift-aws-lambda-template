@@ -1,6 +1,6 @@
+import HelloWorldTests
 import XCTest
-import swift_aws_lambda_templateTests
 
 var tests = [XCTestCaseEntry]()
-tests += swift_aws_lambda_templateTests.allTests()
+tests += HelloWorldTests.allTests()
 XCTMain(tests)
