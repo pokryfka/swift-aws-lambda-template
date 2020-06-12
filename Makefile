@@ -24,8 +24,12 @@ run:
 test:
 	swift test
 
+.PHONY: build_docker
+docker_image:
+	docker inspect swift-lambda-builder > /dev/null 2>&1 || docker build -t swift-lambda-builder .
+
 .PHONY: package
-package_executables:
+package_executables: docker_image
 	docker run \
 	  --rm \
 	  --volume "$(shell pwd)/:/src" \
@@ -33,7 +37,7 @@ package_executables:
 	  ${DOCKER_IMAGE} \
 	  bash -c "for executable in ${DEPLOY_PACKAGES}; do scripts/package.sh \$${executable}; done"
 
-${SWIFT_RUNTIME_LAYER}:
+${SWIFT_RUNTIME_LAYER}: docker_image
 	docker run \
 	  --rm \
 	  --volume "$(shell pwd)/:/src" \

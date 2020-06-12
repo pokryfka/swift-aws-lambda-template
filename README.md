@@ -41,12 +41,6 @@ $ http POST http://localhost:7000/invoke @events/api.json
 
 ## Deploying to AWS Lambda
 
-Build docker image:
-
-```
-$ docker build -t swift-lambda-builder .
-```
-
 Configure the environment:
 
 ```
