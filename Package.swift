@@ -8,7 +8,8 @@ let package = Package(
         .macOS(.v10_13)
     ],
     products: [
-        .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"])
+        .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
+        .library(name: "HelloWorld", targets: ["HelloWorld"]),
     ],
     dependencies: [
         .package(
@@ -21,7 +22,12 @@ let package = Package(
             dependencies: [
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
+                .byName(name: "HelloWorld"),
             ]
+        ),
+        .target(
+            name: "HelloWorld",
+            dependencies: []
         ),
         .testTarget(
             name: "swift-aws-lambda-templateTests",

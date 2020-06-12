@@ -1,5 +1,5 @@
 {
-  "body": "eyJ0ZXN0IjoiYm9keSJ9",
+  "body": "{\"secondsFromGMT\": 3600}",
   "resource": "/{proxy+}",
   "path": "/hello",
   "httpMethod": "POST",
