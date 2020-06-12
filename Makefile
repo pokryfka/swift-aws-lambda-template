@@ -3,10 +3,11 @@ DEPLOY_PACKAGES=HelloWorldAPI
 DOCKER_IMAGE=swift-lambda-builder
 SWIFT_RUNTIME_LAYER=.build/lambda/swift.zip
 SAM_CONFIG=samconfig.toml
+SWIFT_RELEASE_OPTS=-c release -Xswiftc -g
 
 .PHONY: clean
 clean:
-	rm -rf .build/lambda
+	rm -rf .build
 
 .PHONY: lint
 lint:
@@ -28,8 +29,17 @@ test:
 docker_image:
 	docker inspect swift-lambda-builder > /dev/null 2>&1 || docker build -t swift-lambda-builder .
 
+.PHONY: build_linux
+build_linux: docker_image
+	docker run \
+	  --rm \
+	  --volume "$(shell pwd)/:/src" \
+	  --workdir "/src/" \
+	  swift-lambda-builder \
+	  bash -c "for product in ${DEPLOY_PACKAGES}; do swift build --product \$${product} ${SWIFT_RELEASE_OPTS}; done"
+
 .PHONY: package
-package_executables: docker_image
+package_executables: docker_image build_linux
 	docker run \
 	  --rm \
 	  --volume "$(shell pwd)/:/src" \
