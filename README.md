@@ -15,8 +15,6 @@ A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 
 See [Swift AWS Lambda Runtime Configuration](https://github.com/swift-server/swift-aws-lambda-runtime#configuration).
 
-The can be configured using the `LOG_LEVEL` environment variable
-
 ## Testing locally
 
 Compile and run `HelloWorldAPI` with `XCode` or in terminal:
