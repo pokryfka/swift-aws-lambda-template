@@ -4,28 +4,57 @@ A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 
 ## Requirements
 
-- Swift compiler and Swift Package Manager - both included in [XCode](https://developer.apple.com/xcode/)
+- [Swift](https://swift.org) compiler and [Swift Package Manager](https://swift.org/package-manager/) - both included in [XCode](https://developer.apple.com/xcode/)
 - [Docker](https://docs.docker.com/docker-for-mac/install/)
 - [Amazon Web Services](https://aws.amazon.com) Account
-- [AWS Serverless Application Model](https://github.com/awslabs/serverless-application-model) CLI
+- [AWS Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model) CLI
 - [GNU Make](https://www.gnu.org/software/make/)
 - [swift-format](https://github.com/apple/swift-format)
 
 ## Configuration
 
-[Swift AWS Lambda Runtime Configuration](https://github.com/swift-server/swift-aws-lambda-runtime) can be fine tuned using environment variables.
+- `Package.swift` - [Swift Package Manager](https://swift.org/package-manager/) manifest file defining the package’s name, its contents and dependencies
 
-[AWS SAM CLI Config](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html) is created and saved in `samconfig.toml`.
+- `template.yaml` - [AWS SAM Template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification.html) defining the application's AWS resources
 
-## Testing locally
+- `samconfig.toml` - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html) project-level configuration file
 
-Compile and run `HelloWorldAPI` with `XCode` or in terminal:
+- [Swift AWS Lambda Runtime Configuration](https://github.com/swift-server/swift-aws-lambda-runtime) can be fine tuned using environment variables
+
+## Deploying to AWS Lambda
+
+Build and deploy:
 
 ```
-$ LOG_LEVEL=debug make run_local
+$ make deploy
 ```
 
-Invoke lambda with `curl`:
+This will:
+
+- build Docker image used to cross compile the code (if it does not exist)
+- cross compile and package Lambda functions and Swift Linux Runtime Lambda Layer
+- prompt to configure AWS SAM project (if `samconfig.toml` does not exist)
+- deploy Lambda functions and resources defined in `template.yaml`
+
+## Testing
+
+### Unit testing
+
+Build and run tests:
+
+```
+$ make test
+```
+
+### Invoking events (locally)
+
+Build and run Lambda:
+
+```
+$ make run
+```
+
+Invoke the Lambda with `curl`:
 
 ```
 $ curl --header "Content-Type: application/json" \
@@ -38,16 +67,6 @@ or with [HTTPie](https://httpie.org):
 ```
 $ http POST http://localhost:7000/invoke @events/api.json
 ```
-
-## Deploying to AWS Lambda
-
-Build and deploy:
-
-```
-$ make deploy
-```
-
-Note that Docker image and SAM configuration will be created if they don't exist.
 
 ## References
 
