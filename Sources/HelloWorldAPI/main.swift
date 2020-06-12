@@ -1,11 +1,14 @@
 import AWSLambdaEvents
 import AWSLambdaRuntime
+import Backtrace
 import HelloWorld
 
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONDecoder
 import class Foundation.JSONEncoder
+
+Backtrace.install()
 
 extension JSONDecoder {
     fileprivate func decode<T: Decodable>(type: T.Type, from string: String) throws -> T {
@@ -42,6 +45,7 @@ private struct HelloWorldOut: Encodable {
 private let handler: Lambda.CodableClosure<APIGateway.Request, APIGateway.Response> = {
     context, request, callback in
     do {
+//        fatalError()
         let now = Date()
         let secondsFromGMT: Int
         if let body = request.body {
