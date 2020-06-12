@@ -4,12 +4,27 @@ set -eu
 
 executable=$1
 package="${executable}.zip"
-
 target=.build/lambda/$executable
-rm -rf "$target"
+
+if [ $# -ge 2 ] && [ $2 == true ]; then
+  copy_exe=false
+  copy_libs=true
+  target_libs="${target}/lib"
+else
+  copy_exe=true
+  copy_libs=false
+  target_libs=${target}
+fi
+
 rm -rf "${target}/../${package}"
+rm -rf "$target"
 mkdir -p "$target"
-cp ".build/release/$executable" "$target/"
+mkdir -p "$target_libs"
+
+if [ "${copy_exe}" == true ]; then
+  cp ".build/release/$executable" "$target/"
+fi
+if [ "${copy_libs}" == true ]; then
 cp -Pv \
   /usr/lib/swift/linux/libBlocksRuntime.so \
   /usr/lib/swift/linux/libFoundation.so \
@@ -28,7 +43,12 @@ cp -Pv \
   /usr/lib/swift/linux/libswiftCore.so \
   /usr/lib/swift/linux/libswiftDispatch.so \
   /usr/lib/swift/linux/libswiftGlibc.so \
-  "$target"
+  "$target_libs"
+fi
+
 cd "$target"
-ln -s "$executable" "bootstrap"
-zip --symlinks ../$package *
+if [ "${copy_exe}" == true ]; then
+  ln -s "$executable" "bootstrap"
+fi
+
+zip --symlinks ../$package * */*
