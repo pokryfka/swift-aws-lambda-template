@@ -30,8 +30,8 @@ let package = Package(
             dependencies: []
         ),
         .testTarget(
-            name: "swift-aws-lambda-templateTests",
-            dependencies: []
+            name: "HelloWorldTests",
+            dependencies: ["HelloWorld"]
         ),
     ]
 )

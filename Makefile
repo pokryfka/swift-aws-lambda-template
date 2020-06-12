@@ -12,9 +12,13 @@ lint:
 format:
 	swift-format format -i -r Package.swift Sources Tests
 
-.PHONY: run_local
-run_local:
+.PHONY: run
+run:
 	swift run
+
+.PHONY: test
+test:
+	swift test
 
 .PHONY: build_aws
 build_aws:
