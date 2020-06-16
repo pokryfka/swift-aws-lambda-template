@@ -23,6 +23,7 @@ Parameters:
 Globals:
   Function:
     Timeout: 3
+    Tracing: Active
     Environment:
       Variables:
         LOG_LEVEL: !Ref LogLevel
@@ -44,7 +45,9 @@ Resources:
       Handler: Provided
       Runtime: provided
       Layers:
-          - !Ref SwiftRuntimeLayer
+        - !Ref SwiftRuntimeLayer
+      Policies:
+        - AWSXrayWriteOnlyAccess
       Events:
         HelloWorldGetEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -65,6 +68,8 @@ Resources:
       Runtime: provided
       Layers:
         - !Ref SwiftRuntimeLayer
+      Policies:
+        - AWSXrayWriteOnlyAccess
       Events:
         HelloWorldScheduledEvent:
           Type: Schedule
