@@ -37,7 +37,7 @@ Resources:
         - provided
       RetentionPolicy: Delete
     
-  HelloWorldFunction:
+  HelloWorldAPIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: .build/lambda/HelloWorldAPI.zip
@@ -46,12 +46,12 @@ Resources:
       Layers:
           - !Ref SwiftRuntimeLayer
       Events:
-        HelloWorldGet:
+        HelloWorldGetEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /hello
             Method: get
-        HelloWorldPost:
+        HelloWorldPostEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /hello
@@ -85,9 +85,9 @@ Outputs:
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
+  HelloWorldAPIFunction:
     Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
+    Value: !GetAtt HelloWorldAPIFunction.Arn
+  HelloWorldAPIFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt HelloWorldAPIFunction.Arn
