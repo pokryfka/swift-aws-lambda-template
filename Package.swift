@@ -10,7 +10,7 @@ let package = Package(
     products: [
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
         .executable(name: "HelloWorldScheduled", targets: ["HelloWorldScheduled"]),
-        .library(name: "HelloWorld", targets: ["HelloWorld"]),
+        .library(name: "AWSXRayRecorder", targets: ["AWSXRayRecorder"]),
     ],
     dependencies: [
         .package(
@@ -19,6 +19,14 @@ let package = Package(
         .package(
             url: "https://github.com/swift-server/swift-backtrace.git",
             .upToNextMajor(from: "1.2.0")),
+        .package(
+            url: "https://github.com/swift-aws/aws-sdk-swift.git",
+            .upToNextMinor(from: "5.0.0-alpha.4")),
+        .package(
+            url: "https://github.com/swift-server/async-http-client.git",
+            .upToNextMinor(from: "1.0.0")),
+        .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.16.1")),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -37,6 +45,7 @@ let package = Package(
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
                 .byName(name: "HelloWorld"),
+                .byName(name: "AWSXRayRecorder"),
             ]
         ),
         .target(
@@ -46,6 +55,20 @@ let package = Package(
         .testTarget(
             name: "HelloWorldTests",
             dependencies: ["HelloWorld"]
+        ),
+        .target(
+            name: "AWSXRayRecorder",
+            dependencies: [
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
+                .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
+                .product(name: "AWSXRay", package: "aws-sdk-swift"),
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIO", package: "swift-nio"),
+            ]
+        ),
+        .testTarget(
+            name: "AWSXRayRecorderTests",
+            dependencies: ["AWSXRayRecorder"]
         ),
     ]
 )
