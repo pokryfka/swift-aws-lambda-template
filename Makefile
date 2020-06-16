@@ -1,4 +1,4 @@
-DEPLOY_PACKAGES=HelloWorldAPI
+DEPLOY_PACKAGES=HelloWorldAPI HelloWorldScheduled
 
 DOCKER_IMAGE=swift-lambda-builder
 SWIFT_RUNTIME_LAYER=.build/lambda/swift.zip
@@ -16,10 +16,6 @@ lint:
 .PHONY: format
 format:
 	swift-format format -i -r Package.swift Sources Tests
-
-.PHONY: run
-run:
-	swift run
 
 .PHONY: test
 test:

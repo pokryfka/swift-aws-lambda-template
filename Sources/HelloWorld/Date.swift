@@ -1,10 +1,3 @@
-//
-//  Date.swift
-//  
-//
-//  Created by Michał A on 2020/6/12.
-//
-
 import struct Foundation.Calendar
 import struct Foundation.Date
 import protocol Foundation.LocalizedError
@@ -39,7 +32,7 @@ public func hour(onDate date: Date = Date(), inTimeZone timeZone: TimeZone) thro
 }
 
 public func hour(
-    onDate date: Date = Date(), inTimeZoneWithSecondsFromGMT secondsFromGMT: Int
+    onDate date: Date = Date(), inTimeZoneWithSecondsFromGMT secondsFromGMT: Int = 0
 ) throws -> Int {
     guard let timeZone = TimeZone(secondsFromGMT: secondsFromGMT) else {
         throw DateError.invalidTimeZone(secondsFromGMT: secondsFromGMT)
