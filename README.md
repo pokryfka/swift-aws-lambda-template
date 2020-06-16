@@ -1,15 +1,29 @@
 # swift-aws-lambda-template
 
+![Build](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Build/badge.svg)
+![Package](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Package/badge.svg)
+
 A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 
 ## Requirements
 
-- [Swift](https://swift.org) compiler and [Swift Package Manager](https://swift.org/package-manager/) - both included in [XCode](https://developer.apple.com/xcode/)
+- [Swift](https://swift.org) compiler and [Package Manager](https://swift.org/package-manager/) - both included in [XCode](https://developer.apple.com/xcode/)
 - [Docker](https://docs.docker.com/docker-for-mac/install/)
-- [Amazon Web Services](https://aws.amazon.com) Account
+- [Amazon Web Services (AWS)](https://aws.amazon.com) Account
 - [AWS Serverless Application Model (SAM)](https://github.com/awslabs/serverless-application-model) CLI
 - [GNU Make](https://www.gnu.org/software/make/)
 - [swift-format](https://github.com/apple/swift-format)
+
+## Overview
+
+The template contains code with two [AWS Lambda](https://aws.amazon.com/lambda/) functions:
+
+- *HelloWorldAPI* handling [Amazon API Gateway](https://aws.amazon.com/api-gateway/) events
+- *HelloWorldScheduled* handling [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) scheduled events
+
+as well as a [AWS SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification.html) used to deploy them using [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html).
+
+Since *SAM CLI* does not support Swift, a [Docker](https://docs.docker.com/docker-for-mac/install/) image is created and used to cross compile and package Swift code to run in *AWS Lambda* environment.
 
 ## Configuration
 
@@ -34,7 +48,19 @@ This will:
 - build Docker image used to cross compile the code (if it does not exist)
 - cross compile and package Lambda functions and Swift Linux Runtime Lambda Layer
 - prompt to configure AWS SAM project (if `samconfig.toml` does not exist)
-- deploy Lambda functions and resources defined in `template.yaml`
+- deploy (create or update) AWS resources defined in `template.yaml` including Lambda functions and layers 
+
+The *HelloWorldAPI* endpoint is printed after successful deployment, example: `https://xxx.execute-api.us-east-1.amazonaws.com/Prod/hello/` 
+
+Note that, once deployed, the *HelloWorldScheduled* will be invoked every 5 minutes. Remove in [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/) or using [AWS CLI](https://github.com/aws/aws-cli).
+
+### Troubleshooting
+
+When prompted, confirm that it is okay to deploy an endpoint without authorization, [see](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-deploying.html):
+
+```
+HelloWorldAPIFunction may not have authorization defined, Is this okay? [y/N]: y
+```
 
 ## Testing
 
@@ -43,15 +69,17 @@ This will:
 Build and run tests:
 
 ```
-$ make test
+$ swift test
 ```
 
 ### Invoking events (locally)
 
+#### HelloWorldAPI
+
 Build and run Lambda:
 
 ```
-$ make run
+swift run HelloWorldAPI
 ```
 
 Invoke the Lambda with `curl`:
@@ -66,6 +94,28 @@ or with [HTTPie](https://httpie.org):
 
 ```
 $ http POST http://localhost:7000/invoke @events/api.json
+```
+
+#### HelloWorldScheduled
+
+Build and run Lambda:
+
+```
+swift run HelloWorldScheduled
+```
+
+Invoke the Lambda with `curl`:
+
+```
+$ curl --header "Content-Type: application/json" \
+  --request POST --data @events/scheduled.json \
+  http://localhost:7000/invoke
+```
+
+or with [HTTPie](https://httpie.org):
+
+```
+$ http POST http://localhost:7000/invoke @events/scheduled.json
 ```
 
 ## References

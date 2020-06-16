@@ -1,10 +1,3 @@
-//
-//  Greeting.swift
-//  
-//
-//  Created by Michał A on 2020/6/11.
-//
-
 import protocol Foundation.LocalizedError
 
 public enum GreetingError: Error {
@@ -20,12 +13,15 @@ extension GreetingError: LocalizedError {
     }
 }
 
-public enum Greeting: String, Encodable {
+public enum Greeting: String, CustomStringConvertible, Encodable {
     case morning = "Good morning"
     case afternoon = "Good afternoon"
     case evening = "Good evening"
     case night = "Good night"
-    case `default` = "Good day"
+
+    public var description: String {
+        rawValue
+    }
 }
 
 public func greeting(atHour hour: Int) throws -> Greeting {
