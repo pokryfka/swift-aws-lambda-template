@@ -50,7 +50,17 @@ This will:
 - prompt to configure AWS SAM project (if `samconfig.toml` does not exist)
 - deploy (create or update) AWS resources defined in `template.yaml` including Lambda functions and layers 
 
+The *HelloWorldAPI* endpoint is printed after successful deployment, example: `https://xxx.execute-api.us-east-1.amazonaws.com/Prod/hello/` 
+
 Note that, once deployed, the *HelloWorldScheduled* will be invoked every 5 minutes. Remove in [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/) or using [AWS CLI](https://github.com/aws/aws-cli).
+
+### Troubleshooting
+
+When prompted, confirm that it is okay to deploy an endpoint without authorization, [see](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-deploying.html):
+
+```
+HelloWorldAPIFunction may not have authorization defined, Is this okay? [y/N]: y
+```
 
 ## Testing
 
