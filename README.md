@@ -1,5 +1,8 @@
 # swift-aws-lambda-template
 
+![Build](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Build/badge.svg)
+![Package](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Package/badge.svg)
+
 A template for deploying Lambda functions with Swift AWS Lambda Runtime.
 
 ## Requirements
@@ -51,7 +54,7 @@ $ make test
 Build and run Lambda:
 
 ```
-$ make run
+swift run HelloWorldScheduled
 ```
 
 Invoke the Lambda with `curl`:
