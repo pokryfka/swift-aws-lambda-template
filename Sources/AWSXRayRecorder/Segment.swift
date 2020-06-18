@@ -3,7 +3,11 @@ import Foundation
 /// A segment records tracing information about a request that your application serves.
 /// At a minimum, a segment records the name, ID, start time, trace ID, and end time of the request.
 /// - See: [AWS X-Ray segment documents](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html)
-struct Segment: Encodable {
+class Segment: Encodable {
+    enum SegmentType: String, Encodable {
+        case subsegment
+    }
+
     // MARK: Required Segment Fields
 
     /// The logical name of the service that handled the request, up to **200 characters**.
@@ -58,21 +62,25 @@ struct Segment: Encodable {
     /// array of subsegment objects.
     var subsegments = [Segment]()
 
-    let type: String = "subsegment"  // TODO: make it configurable
+    private(set) var type: SegmentType?
 
-    init(name: String, traceId: String, parentId: String?) {
+    init(name: String, traceId: String, parentId: String?, subsegment: Bool = false) {
         self.name = name
         self.id = Self.randomId()
         self.traceId = traceId
         self.startTime = Date().timeIntervalSince1970
         self.parentId = parentId
+        // TODO: seems like its enough to set parrent correctly
+        if parentId != nil && subsegment {
+            self.type = .subsegment
+        }
     }
 
     /// Updates `endTime` of the Segment and its subsegments.
-    mutating func end() {
+    func end() {
         let now = Date().timeIntervalSince1970
         endTime = now
-        for var segment in subsegments {
+        for segment in subsegments {
             segment.endTime = now
         }
     }
@@ -82,10 +90,10 @@ struct Segment: Encodable {
         case traceId = "trace_id"
         case startTime = "start_time"
         case endTime = "end_time"
-        //        case inProgress = "in_progress"
+        // case inProgress = "in_progress"
         case type
         case parentId = "parent_id"
-        //        case subsegments // TODO: fix, not sure if empty array can be sent
+        case subsegments
     }
 }
 

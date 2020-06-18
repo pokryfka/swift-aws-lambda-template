@@ -27,9 +27,19 @@ where Handler.In == In, Handler.Out == Void {
             tracingHeader = TracingHeaderValue()
         }
         let recorder = XRayRecorder()
-        recorder.beginSubSegment(
-            name: "XRayLambdaHandlerSubSegment", traceId: String(describing: tracingHeader.root),
+        let segmentId1 = recorder.beginSubSegment(
+            name: "XRayLambdaHandlerSubSegment1", traceId: String(describing: tracingHeader.root),
             parentId: tracingHeader.parentId)
+        _ = recorder.beginSubSegment(
+            name: "XRayLambdaHandlerSubSegment1.1", traceId: String(describing: tracingHeader.root),
+            parentId: segmentId1)
+        _ = recorder.beginSubSegment(
+            name: "XRayLambdaHandlerSubSegment2", traceId: String(describing: tracingHeader.root),
+            parentId: tracingHeader.parentId)
+        // sending after parent ended
+        //        _ = recorder.beginSubSegment(
+        //            name: "XRayLambdaHandlerSubSegment1.2", traceId: String(describing: tracingHeader.root),
+        //            parentId: segmentId1)
         return lambdaHandler.handle(context: context, payload: payload)
             .flatMap { _ in recorder.sendSegments(emmiter: self.emmiter) }
     }

@@ -2,19 +2,26 @@ import NIO
 
 /// - See: [Sending trace data to AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html)
 public class XRayRecorder {
-    private var currentSegment: Segment?
+    private var segments = [Segment]()
 
-    public func beginSubSegment(name: String, traceId: String, parentId: String?) {
+    private var currentSegment: Segment? { segments.last }
+
+    public func beginSubSegment(name: String, traceId: String, parentId: String?) -> String {
         // TODO: add metadata
-        // TODO: check if traceId and parentId are the same as the current segment, otherwise - end the current?
-        // TODO: protect with lock
         let newSegment = Segment(name: name, traceId: traceId, parentId: parentId)
-        if var segment = currentSegment {
+        // TODO: protect with lock
+        // TODO: compare the logic here with different clients
+        if let segment = currentSegment,
+            newSegment.traceId == segment.traceId && newSegment.parentId == segment.id
+        {
+            // TODO: don to allow to add subsegment if parent ended
             segment.subsegments.append(newSegment)
-            currentSegment = segment
         } else {
-            currentSegment = newSegment
+            currentSegment?.end()
+            segments.append(newSegment)
         }
+
+        return newSegment.id
     }
 
     public func endSubSegment() {
@@ -26,11 +33,11 @@ public class XRayRecorder {
         // TODO: protect with lock
         endSubSegment()
         // TODO: check if sampled
-        let segment = currentSegment
-        currentSegment = nil
+        let sampledSegments = segments
+        segments.removeAll()
 
-        if let segment = segment {
-            return emmiter.send(segments: [segment])
+        if sampledSegments.isEmpty == false {
+            return emmiter.send(segments: sampledSegments)
         } else {
             return emmiter.eventLoop.makePromise(of: Void.self).futureResult
         }
