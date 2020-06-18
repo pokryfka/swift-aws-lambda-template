@@ -14,7 +14,7 @@ where Handler.In == In, Handler.Out == Void {
     private let lambdaHandler: Handler
 
     public init(eventLoop: EventLoop, lambdaHandler: Handler) {
-        emmiter = XRayEmmiter(eventLoop: eventLoop)
+        emmiter = XRayEmmiter(eventLoop: eventLoop, endpoint: Lambda.env("XRAY_ENDPOINT"))
         self.lambdaHandler = lambdaHandler
     }
 

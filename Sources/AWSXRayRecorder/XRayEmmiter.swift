@@ -26,11 +26,14 @@ class XRayEmmiter: Emmiter {
 
     private lazy var logger = Logger(label: "XRayEmmiter")
 
-    init(eventLoop: EventLoop) {
+    init(eventLoop: EventLoop, endpoint: String? = nil) {
         self.eventLoop = eventLoop
         httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoop))
-        // TODO: check if the region needs to be explicitly set? check env?
-        xray = XRay(region: .useast1, httpClientProvider: .shared(httpClient))
+        if let endpoint = endpoint {
+            xray = XRay(endpoint: endpoint, httpClientProvider: .shared(httpClient))
+        } else {
+            xray = XRay(httpClientProvider: .shared(httpClient))
+        }
     }
 
     deinit {
