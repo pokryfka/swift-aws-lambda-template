@@ -45,7 +45,12 @@ class XRayEmmiter: Emmiter {
             let documents = try segments.map { try jsonEncoder.encode($0) as String }
             logger.info("Sending documents...\(documents.reduce("") { "\($0)\n\($1)" } )")
             let segmentRequest = XRay.PutTraceSegmentsRequest(traceSegmentDocuments: documents)
-            return xray.putTraceSegments(segmentRequest).map { _ in }
+            return xray.putTraceSegments(segmentRequest)
+                .map { _ in }
+                .recover { error in
+                    // log the error but do not fail
+                    self.logger.error("Failed to send documents: \(error)")
+                }
         } catch {
             return eventLoop.makeFailedFuture(error)
         }
