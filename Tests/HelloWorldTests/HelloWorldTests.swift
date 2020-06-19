@@ -26,8 +26,4 @@ final class HelloWorldTests: XCTestCase {
             }
         }
     }
-
-    static var allTests = [
-        ("testGreetings", testGreetings)
-    ]
 }

@@ -75,12 +75,4 @@ final class AWSXRaySegmentTests: XCTestCase {
         }
         XCTAssertEqual(values.count, numTests)
     }
-
-    static var allTests = [
-        ("testTraceRandomIdenifier", testTraceRandomIdenifier),
-        ("testTraceRandomId", testTraceRandomId),
-        ("testTraceingHeaderValueRootNoParent", testTracingHeaderValueRootNoParent),
-        ("testTraceingHeaderValueRootWithParent", testTracingHeaderValueRootWithParent),
-        ("testSegmentRandomId", testSegmentRandomId),
-    ]
 }

@@ -86,8 +86,4 @@ final class AWSXRayRecorderTests: XCTestCase {
         XCTAssertEqual(subsegment?.parentId, segmentId)
         XCTAssertEqual(subsegment?.subsegments.count, 0)
     }
-
-    static var allTests = [
-        ("testRecordingOneSegmentNoEnding", testRecordingOneSegmentNoEnding)
-    ]
 }
