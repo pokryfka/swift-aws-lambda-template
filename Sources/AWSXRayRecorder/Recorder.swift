@@ -1,45 +1,41 @@
 import NIO
+import NIOConcurrencyHelpers
 
 /// - See: [Sending trace data to AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html)
 public class XRayRecorder {
-    private var segments = [Segment]()
+    private let lock = Lock()
 
-    private var currentSegment: Segment? { segments.last }
+    private var _traceId = TraceID()
+    private var _segments = [Segment]()
 
-    public func beginSubSegment(name: String, traceId: String, parentId: String?) -> String {
-        // TODO: add metadata
-        let newSegment = Segment(name: name, traceId: traceId, parentId: parentId)
-        // TODO: protect with lock
-        // TODO: compare the logic here with different clients
-        if let segment = currentSegment,
-            newSegment.traceId == segment.traceId && newSegment.parentId == segment.id
-        {
-            // TODO: don to allow to add subsegment if parent ended
-            segment.subsegments.append(newSegment)
-        } else {
-            currentSegment?.end()
-            segments.append(newSegment)
+    public init() {}
+
+    private func beginSegment(name: String, parentId: String?, subsegment: Bool) -> Segment {
+        lock.withLock {
+            let newSegment = Segment(
+                name: name, traceId: _traceId, parentId: parentId, subsegment: subsegment)
+            _segments.append(newSegment)
+            return newSegment
         }
-
-        return newSegment.id
     }
 
-    public func endSubSegment() {
-        // TODO: protect with lock
-        currentSegment?.end()
+    public func beginSegment(name: String, parentId: String? = nil) -> Segment {
+        beginSegment(name: name, parentId: parentId, subsegment: false)
     }
 
-    func sendSegments(emmiter: Emmiter) -> EventLoopFuture<Void> {
-        // TODO: protect with lock
-        endSubSegment()
-        // TODO: check if sampled
-        let sampledSegments = segments
-        segments.removeAll()
+    public func beginSubSegment(name: String, parentId: String) -> Segment {
+        beginSegment(name: name, parentId: parentId, subsegment: true)
+    }
 
-        if sampledSegments.isEmpty == false {
-            return emmiter.send(segments: sampledSegments)
-        } else {
-            return emmiter.eventLoop.makePromise(of: Void.self).futureResult
+    public func beginSegment(name: String, traceHeader: TraceHeader?) -> Segment {
+        if let traceHeader = traceHeader {
+            lock.withLockVoid { _traceId = traceHeader.root }
         }
+        return beginSegment(
+            name: name, parentId: traceHeader?.parentId, subsegment: traceHeader?.parentId != nil)
+    }
+
+    public var segments: [Segment] {
+        lock.withLock { self._segments }
     }
 }

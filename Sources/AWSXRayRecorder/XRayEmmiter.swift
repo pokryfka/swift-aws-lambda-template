@@ -3,30 +3,14 @@ import AsyncHTTPClient
 import Logging
 import NIO
 
-import struct Foundation.Data
-import class Foundation.JSONEncoder
-
-extension JSONEncoder {
-    fileprivate func encode<T: Encodable>(_ value: T) throws -> String {
-        String(decoding: try encode(value), as: UTF8.self)
-    }
-}
-
-private let jsonEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .prettyPrinted
-    encoder.dateEncodingStrategy = .iso8601
-    return encoder
-}()
-
-class XRayEmmiter: Emmiter {
+public class XRayEmmiter {
     let eventLoop: EventLoop
     private let httpClient: HTTPClient
     private let xray: XRay
 
     private lazy var logger = Logger(label: "XRayEmmiter")
 
-    init(eventLoop: EventLoop, endpoint: String? = nil) {
+    public init(eventLoop: EventLoop, endpoint: String? = nil) {
         self.eventLoop = eventLoop
         httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoop))
         if let endpoint = endpoint {
@@ -40,19 +24,28 @@ class XRayEmmiter: Emmiter {
         try? httpClient.syncShutdown()
     }
 
-    func send(segments: [Segment]) -> EventLoopFuture<Void> {
-        do {
-            let documents = try segments.map { try jsonEncoder.encode($0) as String }
-            logger.info("Sending documents...\(documents.reduce("") { "\($0)\n\($1)" } )")
-            let segmentRequest = XRay.PutTraceSegmentsRequest(traceSegmentDocuments: documents)
-            return xray.putTraceSegments(segmentRequest)
-                .map { _ in }
-                .recover { error in
-                    // log the error but do not fail
-                    self.logger.error("Failed to send documents: \(error)")
-                }
-        } catch {
-            return eventLoop.makeFailedFuture(error)
+    public func send(segments: [XRayRecorder.Segment]) -> EventLoopFuture<Void> {
+        guard segments.isEmpty == false
+        else {
+            return eventLoop.makeSucceededFuture(())
         }
+
+        let documents = segments.filter { $0.isReady }.compactMap { try? $0.JSONString() }
+        logger.info("Sending documents...\(documents.reduce("") { "\($0)\n\($1)" } )")
+        let segmentRequest = XRay.PutTraceSegmentsRequest(traceSegmentDocuments: documents)
+        return xray.putTraceSegments(segmentRequest)
+            .map { result in
+                self.logger.info("Result: \(result)")
+            }
+            .recover { error in
+                // log the error but do not fail...
+                self.logger.error("Failed to send documents: \(error)")
+            }
+    }
+}
+
+extension XRayRecorder.Segment {
+    fileprivate var isReady: Bool {
+        endTime != nil
     }
 }

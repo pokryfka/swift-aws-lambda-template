@@ -11,30 +11,46 @@ private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
     typealias In = Cloudwatch.ScheduledEvent
     typealias Out = Void
 
-    func handle(context: Lambda.Context, payload: In) -> EventLoopFuture<Void> {
+    private let recorder = XRayRecorder()
+    private let emmiter: XRayEmmiter
+
+    init(eventLoop: EventLoop) {
+        emmiter = XRayEmmiter(eventLoop: eventLoop, endpoint: Lambda.env("XRAY_ENDPOINT"))
+    }
+
+    private func sendXRaySegments() -> EventLoopFuture<Void> {
+        emmiter.send(segments: recorder.segments)
+    }
+
+    func shutdown(context: Lambda.ShutdownContext) -> EventLoopFuture<Void> {
+        return context.eventLoop.makeSucceededFuture(())
+    }
+
+    func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Void> {
         do {
-            let greetingHour = try hour()
-            let greetingMessage = try greeting(atHour: greetingHour)
-            context.logger.info("\(greetingMessage)")
+            let traceHeader = try? XRayRecorder.TraceHeader(string: context.traceID)
+            try recorder.segment(
+                name: "LambdaHandler",
+                traceHeader: traceHeader
+            ) { segment in
+                let greetingHour = try segment.subSegment(name: "Greeting Hour") { _ in
+                    try hour()
+                }
+                segment.subSegment(name: "Subsegment A") { segment in
+                    segment.subSegment(name: "Subsegment A.1") { _ in }
+                    segment.subSegment(name: "Subsegment A.2") { _ in }
+                }
+                let greetingMessage = try segment.subSegment(name: "Greeting Message") { _ in
+                    try greeting(atHour: greetingHour)
+                }
+                context.logger.info("\(greetingMessage)")
+            }
             return context.eventLoop.makeSucceededFuture(())
+                .flatMap { self.sendXRaySegments() }
         } catch {
             return context.eventLoop.makeFailedFuture(error)
         }
     }
 }
 
-#if DEBUG
-    try Lambda.withLocalServer {
-        Lambda.run {
-            XRayLambdaHandler(
-                eventLoop: $0,
-                lambdaHandler: HelloWorldScheduledHandler())
-        }
-    }
-#else
-    Lambda.run {
-        XRayLambdaHandler(
-            eventLoop: $0,
-            lambdaHandler: HelloWorldScheduledHandler())
-    }
-#endif
+Lambda.run { context in HelloWorldScheduledHandler(eventLoop: context.eventLoop) }

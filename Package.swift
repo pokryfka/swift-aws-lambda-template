@@ -15,10 +15,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/swift-server/swift-aws-lambda-runtime.git",
-            .upToNextMajor(from: "0.1.0")),
+            .upToNextMajor(from: "0.2.0")),
         .package(
             url: "https://github.com/swift-server/swift-backtrace.git",
             .upToNextMajor(from: "1.2.0")),
+        // AWSXRayRecorder
         .package(
             url: "https://github.com/swift-aws/aws-sdk-swift.git",
             .upToNextMinor(from: "5.0.0-alpha.4")),
@@ -27,6 +28,7 @@ let package = Package(
             .upToNextMinor(from: "1.0.0")),
         .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.16.1")),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-metrics.git", "1.0.0"..<"3.0.0"),
     ],
     targets: [
         .target(
@@ -36,6 +38,7 @@ let package = Package(
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
                 .byName(name: "HelloWorld"),
+                .byName(name: "AWSXRayRecorder"),
             ]
         ),
         .target(
@@ -64,6 +67,8 @@ let package = Package(
                 .product(name: "AWSXRay", package: "aws-sdk-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "Metrics", package: "swift-metrics"),
             ]
         ),
         .testTarget(
