@@ -25,6 +25,136 @@ extension XRayRecorder {
             case subsegment
         }
 
+        /// An object with information about your application.
+        public struct Service: Encodable {
+            /// A string that identifies the version of your application that served the request.
+            let version: String
+        }
+
+        /// The type of AWS resource running your application.
+        ///
+        /// When multiple values are applicable to your application, use the one that is most specific.
+        /// For example, a Multicontainer Docker Elastic Beanstalk environment runs your application on an Amazon ECS container,
+        /// which in turn runs on an Amazon EC2 instance.
+        /// In this case you would set the origin to `AWS::ElasticBeanstalk::Environment` as the environment is the parent of the other two resources.
+        public enum Origin: String, Encodable {
+            /// An Amazon EC2 instance.
+            case ec2Instance = "AWS::EC2::Instance"
+            /// An Amazon ECS container.
+            case ecsContainer = "AWS::ECS::Container"
+            /// An Elastic Beanstalk environment.
+            case elasticBeanstalk = "AWS::ElasticBeanstalk::Environment"
+        }
+
+        /// Use an HTTP block to record details about an HTTP request that your application served (in a segment) or that your application made to a downstream HTTP API (in a subsegment). Most of the fields in this object map to information found in an HTTP request and response.
+        ///
+        /// When you instrument a call to a downstream web api, record a subsegment with information about the HTTP request and response.
+        /// X-Ray uses the subsegment to generate an inferred segment for the remote API.
+        ///
+        /// # References
+        /// - [AWS X-Ray segment documents - HTTP request data](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html#api-segmentdocuments-http)
+        public struct HTTP: Encodable {
+            /// Information about a request.
+            struct Request: Encodable {
+                /// The request method. For example, GET.
+                var method: String?
+                /// The full URL of the request, compiled from the protocol, hostname, and path of the request.
+                var url: String?
+                /// The user agent string from the requester's client.
+                var userAgent: String?
+                /// The IP address of the requester.
+                /// Can be retrieved from the IP packet's Source Address or, for forwarded requests, from an `X-Forwarded-For` header.
+                var clientIP: String?
+                /// (segments only) **boolean** indicating that the `client_ip` was read from an `X-Forwarded-For` header and
+                /// is not reliable as it could have been forged.
+                var forwardedFor: Bool?
+                /// (subsegments only) **boolean** indicating that the downstream call is to another traced service.
+                /// If this field is set to `true`, X-Ray considers the trace to be broken until the downstream service uploads a segment with a `parent_id` that
+                /// matches the `id` of the subsegment that contains this block.
+                var traced: Bool?
+            }
+
+            /// Information about a response.
+            struct Response: Encodable {
+                /// number indicating the HTTP status of the response.
+                var status: UInt?
+                /// number indicating the length of the response body in bytes.
+                var contentLength: UInt64?
+            }
+
+            var request: Request?
+            var response: Response?
+        }
+
+        /// For segments, the aws object contains information about the resource on which your application is running.
+        /// Multiple fields can apply to a single resource. For example, an application running in a multicontainer Docker environment on
+        /// Elastic Beanstalk could have information about the Amazon EC2 instance, the Amazon ECS container running on the instance,
+        /// and the Elastic Beanstalk environment itself.
+        ///
+        /// # References
+        /// - [AWS X-Ray segment documents - AWS resource data](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html#api-segmentdocuments-aws)
+        public struct AWS: Encodable {
+            /// If your application sends segments to a different AWS account, record the ID of the account running your application.
+            var accountId: String?
+
+            // MARK: Segments
+
+            /// Information about an Amazon ECS container.
+            struct ECS: Encodable {
+                /// The container ID of the container running your application.
+                let container: String?
+            }
+
+            /// Information about an EC2 instance.
+            struct EC2: Encodable {
+                /// The instance ID of the EC2 instance.
+                let instanceId: String?
+                /// The Availability Zone in which the instance is running.
+                let availabilityZone: String?
+            }
+
+            /// Information about an Elastic Beanstalk environment.
+            /// You can find this information in a file named `/var/elasticbeanstalk/xray/environment.conf`
+            /// on the latest Elastic Beanstalk platforms.
+            struct ElasticBeanstalk: Encodable {
+                /// The name of the environment.
+                var environmentName: String?
+                /// The name of the application version that is currently deployed to the instance that served the request.
+                var versionLabel: String?
+                /// **number** indicating the ID of the last successful deployment to the instance that served the request.
+                var deploymentId: Int?
+            }
+
+            /// Information about an Amazon ECS container.
+            var ecs: ECS?
+            /// Information about an EC2 instance.
+            var ec2: EC2?
+            /// Information about an Elastic Beanstalk environment.
+            var elasticBeanstalk: ElasticBeanstalk?
+
+            // MARK: Subsegments
+
+            /// The name of the API action invoked against an AWS service or resource.
+            var operation: String?
+            /// If the resource is in a region different from your application, record the region. For example, `us-west-2`.
+            var region: String?
+            /// Unique identifier for the request.
+            var requestId: String?
+            /// For operations on an Amazon SQS queue, the queue's URL.
+            var queueURL: String?
+            /// For operations on a DynamoDB table, the name of the table.
+            var tableName: String?
+        }
+
+        struct Exception: Encodable {
+            /// A 64-bit identifier for the exception, unique among segments in the same trace, in **16 hexadecimal digits**.
+            let id: String
+            /// The exception message.
+            var message: String?
+
+            // TODO: other optional attributes
+        }
+
         /// Segments and subsegments can include an annotations object containing one or more fields that
         /// X-Ray indexes for use with filter expressions.
         /// Fields can have string, number, or Boolean values (no objects or arrays).
@@ -84,6 +214,8 @@ extension XRayRecorder {
         /// Only send one complete segment, and one or zero in-progress segments, per request.
         var inProgress: Bool { endTime == nil }
 
+        // MARK: Optional Segment Fields
+
         /// A subsegment ID you specify if the request originated from an instrumented application.
         /// The X-Ray SDK adds the parent subsegment ID to the tracing header for downstream HTTP calls.
         /// In the case of nested subsguments, a subsegment can have a segment or a subsegment as its parent.
@@ -97,7 +229,28 @@ extension XRayRecorder {
         /// Required only if sending a subsegment separately.
         private(set) var type: SegmentType?
 
-        // MARK: Optional Segment Fields
+        /// An object with information about your application.
+        private var _service: Service?
+
+        /// A string that identifies the user who sent the request.
+        private var _user: String?
+
+        /// The type of AWS resource running your application.
+        private var _origin: Origin?
+
+        /// http objects with information about the original HTTP request.
+        private var _http: HTTP?
+
+        /// aws object with information about the AWS resource on which your application served the request
+        private var _aws: AWS?
+
+        /// **boolean** indicating that a client error occurred (response status code was 4XX Client Error).
+        private var error: Bool?
+        /// **boolean** indicating that a request was throttled (response status code was 429 Too Many Requests).
+        private var throttle: Bool?
+        /// **boolean** indicating that a server error occurred (response status code was 5XX Server Error).
+        private var fault: Bool?
+        private var cause: Exception?
 
         /// annotations object with key-value pairs that you want X-Ray to index for search.
         private var annotations: Annotations?
@@ -108,15 +261,24 @@ extension XRayRecorder {
         /// array of subsegment objects.
         private var subsegments: [Segment]?
 
-        init(name: String, traceId: TraceID, parentId: String?, subsegment: Bool) {
+        init(
+            name: String, traceId: TraceID, parentId: String?, subsegment: Bool,
+            service: Service? = nil, user: String? = nil,
+            origin: Origin? = nil, http: HTTP? = nil, aws: AWS? = nil,
+            annotations: Annotations? = nil, metadata: Metadata? = nil
+        ) {
             self.name = name
             self.id = Self.generateId()
             self.traceId = traceId
             self.startTime = Date().timeIntervalSince1970
             self.parentId = parentId
-            if subsegment && parentId != nil {
-                self.type = .subsegment
-            }
+            self.type = subsegment && parentId != nil ? .subsegment : nil
+            self._service = service
+            self._user = user
+            self._http = http
+            self._aws = aws
+            self.annotations = annotations
+            self.metadata = metadata
         }
 
         enum CodingKeys: String, CodingKey {
@@ -127,6 +289,12 @@ extension XRayRecorder {
             // case inProgress = "in_progress"
             case type
             case parentId = "parent_id"
+            case _service = "service"
+            case _user = "user"
+            case _origin = "origin"
+            case _http = "http"
+            case _aws = "aws"
+            case error, throttle, fault, cause
             case annotations, metadata
             case subsegments
         }
@@ -153,11 +321,25 @@ extension XRayRecorder.Segment {
         }
     }
 
-    func addDuration(seconds: Double) {
+    //    func addDuration(seconds: Double) {
+    //        lock.withLockVoid {
+    //            guard seconds >= 0 else { return }
+    //            let date = endTime ?? startTime
+    //            endTime = date + seconds
+    //        }
+    //    }
+}
+
+// MARK: Errors and exceptions
+
+extension XRayRecorder.Segment {
+    public func setError(_ error: Error) {
+        let exception = Exception(
+            id: XRayRecorder.Segment.generateId(),
+            message: "\(error)")
         lock.withLockVoid {
-            guard seconds >= 0 else { return }
-            let date = endTime ?? startTime
-            endTime = date + seconds
+            self.error = true
+            cause = exception
         }
     }
 }
@@ -225,7 +407,7 @@ extension XRayRecorder.Segment.AnnotationValue: Encodable {
 // MARK: Subsegments
 
 extension XRayRecorder.Segment {
-    public func beginSubSegment(name: String) -> XRayRecorder.Segment {
+    public func beginSubsegment(name: String) -> XRayRecorder.Segment {
         lock.withLock {
             let newSegment = XRayRecorder.Segment(
                 name: name, traceId: traceId, parentId: id, subsegment: true)

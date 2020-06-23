@@ -24,7 +24,7 @@ public class XRayRecorder {
         beginSegment(name: name, parentId: parentId, subsegment: false)
     }
 
-    public func beginSubSegment(name: String, parentId: String) -> Segment {
+    public func beginSubsegment(name: String, parentId: String) -> Segment {
         beginSegment(name: name, parentId: parentId, subsegment: true)
     }
 

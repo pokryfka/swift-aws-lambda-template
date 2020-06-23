@@ -11,6 +11,7 @@ private let jsonEncoder: JSONEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = .prettyPrinted
     encoder.dateEncodingStrategy = .iso8601
+    encoder.keyEncodingStrategy = .convertToSnakeCase
     return encoder
 }()
 

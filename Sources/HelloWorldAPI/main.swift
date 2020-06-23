@@ -35,6 +35,10 @@ private struct HelloWorldOut: Encodable {
     let message: Greeting
 }
 
+private enum HelloWorldError: Error {
+    case test(String)
+}
+
 private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias In = APIGateway.Request
     typealias Out = APIGateway.Response
@@ -72,7 +76,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             ) { segment -> Out in
                 segment.addMetadata(["debug": ["test": "Test"]])
                 let now = Date()
-                let secondsFromGMT: Int = try segment.subSegment(name: "Parsing Input") { _ in
+                let secondsFromGMT: Int = try segment.subsegment(name: "Parsing Input") { _ in
                     if let body = event.body {
                         let input = try jsonDecoder.decode(type: HelloWorldIn.self, from: body)
                         return input.secondsFromGMT
@@ -82,10 +86,14 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                 }
                 segment.addAnnotation("secondsFromGMT", value: secondsFromGMT)
 
-                let greetingHour = try segment.subSegment(name: "Greeting Hour") { _ in
+                try? segment.subsegment(name: "Failure 123") { _ in
+                    throw HelloWorldError.test("123")
+                }
+
+                let greetingHour = try segment.subsegment(name: "Greeting Hour") { _ in
                     try hour(onDate: now, inTimeZoneWithSecondsFromGMT: secondsFromGMT)
                 }
-                let greetingMessage = try segment.subSegment(name: "Greeting Message") { _ in
+                let greetingMessage = try segment.subsegment(name: "Greeting Message") { _ in
                     try greeting(atHour: greetingHour)
                 }
 
@@ -96,7 +104,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                     message: greetingMessage
                 )
 
-                let encodingSegment = segment.beginSubSegment(name: "Encoding Response")
+                let encodingSegment = segment.beginSubsegment(name: "Encoding Response")
                 let body: String? = try jsonEncoder.encode(value: output)
                 let response = APIGateway.Response(
                     statusCode: HTTPResponseStatus.ok,

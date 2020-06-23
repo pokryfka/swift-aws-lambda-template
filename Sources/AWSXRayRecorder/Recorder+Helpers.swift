@@ -7,7 +7,12 @@ extension XRayRecorder {
         defer {
             segment.end()
         }
-        return try body(segment)
+        do {
+            return try body(segment)
+        } catch {
+            segment.setError(error)
+            throw error
+        }
     }
 
     @inlinable
@@ -19,18 +24,28 @@ extension XRayRecorder {
         defer {
             segment.end()
         }
-        return try body(segment)
+        do {
+            return try body(segment)
+        } catch {
+            segment.setError(error)
+            throw error
+        }
     }
 }
 
 extension XRayRecorder.Segment {
     @inlinable
-    public func subSegment<T>(name: String, body: (XRayRecorder.Segment) throws -> T) rethrows -> T
+    public func subsegment<T>(name: String, body: (XRayRecorder.Segment) throws -> T) rethrows -> T
     {
-        let newSegment = beginSubSegment(name: name)
+        let segment = beginSubsegment(name: name)
         defer {
-            newSegment.end()
+            segment.end()
         }
-        return try body(newSegment)
+        do {
+            return try body(segment)
+        } catch {
+            segment.setError(error)
+            throw error
+        }
     }
 }

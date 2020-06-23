@@ -33,14 +33,14 @@ private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
                 name: "HelloWorldScheduledHandler",
                 traceHeader: traceHeader
             ) { segment in
-                let greetingHour = try segment.subSegment(name: "Greeting Hour") { _ in
+                let greetingHour = try segment.subsegment(name: "Greeting Hour") { _ in
                     try hour()
                 }
-                segment.subSegment(name: "Subsegment A") { segment in
-                    segment.subSegment(name: "Subsegment A.1") { _ in }
-                    segment.subSegment(name: "Subsegment A.2") { _ in }
+                segment.subsegment(name: "Subsegment A") { segment in
+                    segment.subsegment(name: "Subsegment A.1") { _ in }
+                    segment.subsegment(name: "Subsegment A.2") { _ in }
                 }
-                let greetingMessage = try segment.subSegment(name: "Greeting Message") { _ in
+                let greetingMessage = try segment.subsegment(name: "Greeting Message") { _ in
                     try greeting(atHour: greetingHour)
                 }
                 context.logger.info("\(greetingMessage)")
