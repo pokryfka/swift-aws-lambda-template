@@ -28,7 +28,8 @@ let package = Package(
             .upToNextMinor(from: "1.0.0")),
         .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.16.1")),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://github.com/apple/swift-metrics.git", "1.0.0"..<"3.0.0"),
+        .package(url: "https://github.com/Flight-School/AnyCodable", from: "0.2.3"),
+
     ],
     targets: [
         .target(
@@ -68,7 +69,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
-                .product(name: "Metrics", package: "swift-metrics"),
+                .product(name: "AnyCodable", package: "AnyCodable"),
             ]
         ),
         .testTarget(

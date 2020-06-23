@@ -30,7 +30,7 @@ private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
         do {
             let traceHeader = try? XRayRecorder.TraceHeader(string: context.traceID)
             try recorder.segment(
-                name: "LambdaHandler",
+                name: "HelloWorldScheduledHandler",
                 traceHeader: traceHeader
             ) { segment in
                 let greetingHour = try segment.subSegment(name: "Greeting Hour") { _ in

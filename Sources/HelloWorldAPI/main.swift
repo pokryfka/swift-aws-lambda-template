@@ -67,11 +67,12 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
         do {
             let traceHeader = try? XRayRecorder.TraceHeader(string: context.traceID)
             let response = try recorder.segment(
-                name: "LambdaHandler",
+                name: "HelloWorldAPIHandler",
                 traceHeader: traceHeader
             ) { segment -> Out in
+                segment.addMetadata(["debug": ["test": "Test"]])
                 let now = Date()
-                let secondsFromGMT: Int = try segment.subSegment(name: "Decoding Input") { _ in
+                let secondsFromGMT: Int = try segment.subSegment(name: "Parsing Input") { _ in
                     if let body = event.body {
                         let input = try jsonDecoder.decode(type: HelloWorldIn.self, from: body)
                         return input.secondsFromGMT
@@ -79,6 +80,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                         return 0
                     }
                 }
+                segment.addAnnotation("secondsFromGMT", value: secondsFromGMT)
 
                 let greetingHour = try segment.subSegment(name: "Greeting Hour") { _ in
                     try hour(onDate: now, inTimeZoneWithSecondsFromGMT: secondsFromGMT)

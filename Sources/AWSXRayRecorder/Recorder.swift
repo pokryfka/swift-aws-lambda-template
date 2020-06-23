@@ -1,7 +1,8 @@
 import NIO
 import NIOConcurrencyHelpers
 
-/// - See: [Sending trace data to AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html)
+/// # References
+/// - [Sending trace data to AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html)
 public class XRayRecorder {
     private let lock = Lock()
 

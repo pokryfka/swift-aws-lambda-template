@@ -1,5 +1,6 @@
 import Foundation
 import NIOConcurrencyHelpers
+import AnyCodable
 
 extension XRayRecorder {
 
@@ -10,13 +11,34 @@ extension XRayRecorder {
     /// - [AWS X-Ray segment documents](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html)
     public class Segment: Encodable {
         enum SegmentError: Error {
-            case AlreadyEmitted
+//            case AlreadyEmitted
         }
 
+        enum AnnotationValue {
+            case string(String)
+            case int(Int)
+            case float(Float)
+            case bool(Bool)
+        }
+        
         enum SegmentType: String, Encodable {
             case subsegment
         }
 
+        /// Segments and subsegments can include an annotations object containing one or more fields that
+        /// X-Ray indexes for use with filter expressions.
+        /// Fields can have string, number, or Boolean values (no objects or arrays).
+        /// X-Ray indexes up to 50 annotations per trace.
+        ///
+        /// Keys must be alphanumeric in order to work with filters. Underscore is allowed. Other symbols and whitespace are not allowed.
+        typealias Annotations = [String: AnnotationValue]
+        
+        /// Segments and subsegments can include a metadata object containing one or more fields with values of any type, including objects and arrays.
+        /// X-Ray does not index metadata, and values can be any size, as long as the segment document doesn't exceed the maximum size (64 kB).
+        /// You can view metadata in the full segment document returned by the BatchGetTraces API.
+        /// Field keys (debug in the following example) starting with `AWS.` are reserved for use by AWS-provided SDKs and clients.
+        public typealias Metadata = Dictionary<String, AnyEncodable>
+        
         internal let lock = Lock()
 
         // MARK: Required Segment Fields
@@ -61,15 +83,17 @@ extension XRayRecorder {
 
         // MARK: Optional Segment Fields
 
-        // TODO: add optional attributes, implement custom encoder which will omit nil and not required attributes
-
         /// A subsegment ID you specify if the request originated from an instrumented application.
         /// The X-Ray SDK adds the parent subsegment ID to the tracing header for downstream HTTP calls.
         /// In the case of nested subsguments, a subsegment can have a segment or a subsegment as its parent.
         let parentId: String?
 
-        // TODO: add annotations and metadata
-
+        /// annotations object with key-value pairs that you want X-Ray to index for search.
+        private var annotations: Annotations?
+        
+        /// metadata object with any additional data that you want to store in the segment.
+        private var metadata: Metadata?
+        
         /// array of subsegment objects.
         private var subsegments: [Segment]?
 
@@ -92,9 +116,10 @@ extension XRayRecorder {
             case traceId = "trace_id"
             case startTime = "start_time"
             case endTime = "end_time"
-            //            case inProgress = "in_progress"
+            // case inProgress = "in_progress"
             case type
             case parentId = "parent_id"
+            case annotations, metadata
             case subsegments
         }
     }
@@ -136,6 +161,64 @@ extension XRayRecorder.Segment {
             guard seconds >= 0 else { return }
             let date = endTime ?? startTime
             endTime = date + seconds
+        }
+    }
+}
+
+extension XRayRecorder.Segment {
+    func addAnnotations(_ newElements: Annotations) {
+        lock.withLock {
+            if (annotations?.count ?? 0) > 0 {
+                for (k, v) in newElements {
+                    annotations?.updateValue(v, forKey: k)
+                }
+            } else {
+                annotations = newElements
+            }
+        }
+    }
+    
+    public func addAnnotation(_ key: String, value: Bool) {
+        addAnnotations([key: .bool(value)])
+    }
+    
+    public func addAnnotation(_ key: String, value: Int) {
+        addAnnotations([key: .int(value)])
+    }
+    
+    public func addAnnotation(_ key: String, value: Float) {
+        addAnnotations([key: .float(value)])
+    }
+    
+    public func addAnnotation(_ key: String, value: String) {
+        addAnnotations([key: .string(value)])
+    }
+    
+    public func addMetadata(_ newElements: Metadata) {
+        lock.withLock {
+            if (metadata?.count ?? 0) > 0 {
+                for (k, v) in newElements {
+                    metadata?.updateValue(v, forKey: k)
+                }
+            } else {
+                metadata = newElements
+            }
+        }
+    }
+}
+
+extension XRayRecorder.Segment.AnnotationValue: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .bool(let value):
+            try container.encode(value)
+        case .int(let value):
+            try container.encode(value)
+        case .float(let value):
+            try container.encode(value)
+        case .string(let value):
+            try container.encode(value)
         }
     }
 }

@@ -3,11 +3,11 @@ extension XRayRecorder {
     public func segment<T>(name: String, parentId: String? = nil, body: (Segment) throws -> T)
         rethrows -> T
     {
-        let newSegment = beginSegment(name: name, parentId: parentId)
+        let segment = beginSegment(name: name, parentId: parentId)
         defer {
-            newSegment.end()
+            segment.end()
         }
-        return try body(newSegment)
+        return try body(segment)
     }
 
     @inlinable
@@ -15,11 +15,11 @@ extension XRayRecorder {
         rethrows
         -> T
     {
-        let newSegment = beginSegment(name: name, traceHeader: traceHeader)
+        let segment = beginSegment(name: name, traceHeader: traceHeader)
         defer {
-            newSegment.end()
+            segment.end()
         }
-        return try body(newSegment)
+        return try body(segment)
     }
 }
 
