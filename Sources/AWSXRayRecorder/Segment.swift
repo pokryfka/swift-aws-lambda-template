@@ -1,6 +1,6 @@
+import AnyCodable
 import Foundation
 import NIOConcurrencyHelpers
-import AnyCodable
 
 extension XRayRecorder {
 
@@ -11,7 +11,7 @@ extension XRayRecorder {
     /// - [AWS X-Ray segment documents](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html)
     public class Segment: Encodable {
         enum SegmentError: Error {
-//            case AlreadyEmitted
+            //            case AlreadyEmitted
         }
 
         enum AnnotationValue {
@@ -20,7 +20,7 @@ extension XRayRecorder {
             case float(Float)
             case bool(Bool)
         }
-        
+
         enum SegmentType: String, Encodable {
             case subsegment
         }
@@ -32,13 +32,13 @@ extension XRayRecorder {
         ///
         /// Keys must be alphanumeric in order to work with filters. Underscore is allowed. Other symbols and whitespace are not allowed.
         typealias Annotations = [String: AnnotationValue]
-        
+
         /// Segments and subsegments can include a metadata object containing one or more fields with values of any type, including objects and arrays.
         /// X-Ray does not index metadata, and values can be any size, as long as the segment document doesn't exceed the maximum size (64 kB).
         /// You can view metadata in the full segment document returned by the BatchGetTraces API.
         /// Field keys (debug in the following example) starting with `AWS.` are reserved for use by AWS-provided SDKs and clients.
-        public typealias Metadata = Dictionary<String, AnyEncodable>
-        
+        public typealias Metadata = [String: AnyEncodable]
+
         internal let lock = Lock()
 
         // MARK: Required Segment Fields
@@ -90,10 +90,10 @@ extension XRayRecorder {
 
         /// annotations object with key-value pairs that you want X-Ray to index for search.
         private var annotations: Annotations?
-        
+
         /// metadata object with any additional data that you want to store in the segment.
         private var metadata: Metadata?
-        
+
         /// array of subsegment objects.
         private var subsegments: [Segment]?
 
@@ -177,23 +177,23 @@ extension XRayRecorder.Segment {
             }
         }
     }
-    
+
     public func addAnnotation(_ key: String, value: Bool) {
         addAnnotations([key: .bool(value)])
     }
-    
+
     public func addAnnotation(_ key: String, value: Int) {
         addAnnotations([key: .int(value)])
     }
-    
+
     public func addAnnotation(_ key: String, value: Float) {
         addAnnotations([key: .float(value)])
     }
-    
+
     public func addAnnotation(_ key: String, value: String) {
         addAnnotations([key: .string(value)])
     }
-    
+
     public func addMetadata(_ newElements: Metadata) {
         lock.withLock {
             if (metadata?.count ?? 0) > 0 {

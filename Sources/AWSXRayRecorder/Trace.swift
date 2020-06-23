@@ -59,7 +59,12 @@ extension XRayRecorder.TraceID {
     /// Creates new Trace ID.
     init() {
         let now = Date().timeIntervalSince1970
-        date = String(format: "%02x", Int(now))  // TODO: how important it is that it has 8 chars?
+        date = String(format: "%08x", Int(now))
+        identifier = Self.generateIdentifier()
+    }
+
+    init(date: Double) {
+        self.date = String(format: "%08x", Int(date))
         identifier = Self.generateIdentifier()
     }
 
@@ -79,8 +84,6 @@ extension XRayRecorder.TraceID {
         }
 
         date = String(values[1])
-        //        var r: CUnsignedInt = 0
-        //        Scanner(string: String(values[1])).scanHexInt64()
         identifier = String(values[2])
     }
 }

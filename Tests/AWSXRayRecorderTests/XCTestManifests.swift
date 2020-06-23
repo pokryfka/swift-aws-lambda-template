@@ -26,11 +26,12 @@
         //   `swift test --generate-linuxmain`
         // to regenerate.
         static let __allTests__AWSXRayTraceTests = [
+            ("testTraceHeaderInvalid", testTraceHeaderInvalid),
+            ("testTraceHeaderRootNoParent", testTraceHeaderRootNoParent),
+            ("testTraceHeaderRootWithParent", testTraceHeaderRootWithParent),
+            ("testTraceOldId", testTraceOldId),
             ("testTraceRandomId", testTraceRandomId),
             ("testTraceRandomIdenifier", testTraceRandomIdenifier),
-            ("testTracingHeaderValueInvalid", testTracingHeaderValueInvalid),
-            ("testTracingHeaderValueRootNoParent", testTracingHeaderValueRootNoParent),
-            ("testTracingHeaderValueRootWithParent", testTracingHeaderValueRootWithParent),
         ]
     }
 
