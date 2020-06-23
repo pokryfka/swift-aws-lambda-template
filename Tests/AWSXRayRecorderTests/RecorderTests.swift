@@ -3,81 +3,42 @@ import XCTest
 
 @testable import AWSXRayRecorder
 
+private typealias Segment = XRayRecorder.Segment
+
 final class AWSXRayRecorderTests: XCTestCase {
-    func testRecordingOneSegmentNoEnding() {
-        //        let emmiter = MockEmmiter()
+    func testRecordingOneSegment() {
         let recorder = XRayRecorder()
 
-        let testName = UUID().uuidString
-        let testparentId = UUID().uuidString
-        _ = recorder.beginSubSegment(name: testName, parentId: testparentId)
+        let segmentName = UUID().uuidString
+        let segmentParentId = Segment.generateId()
 
-        //        _ = recorder.sendSegments(emmiter: emmiter)
-        //
-        //        XCTAssertEqual(emmiter.documents.count, 1)
-        //        XCTAssertEqual(emmiter.documents.first?.count, 1)
-        //
-        //        let segment = emmiter.documents.first?.first
-        //        XCTAssertNotNil(segment)
-        //        XCTAssertEqual(segment?.name, testName)
-        //        XCTAssertEqual(segment?.parentId, testparentId)
-        //        XCTAssertEqual(segment?.subsegments.count, 0)
+        let segment = recorder.beginSegment(name: segmentName, parentId: segmentParentId)
+        XCTAssertNotNil(recorder.segments.first)
+        XCTAssertEqual(recorder.segments.first?.name, segmentName)
+        XCTAssertEqual(recorder.segments.first?.parentId, segmentParentId)
+        XCTAssertEqual(recorder.segments.first?.inProgress, true)
+        segment.end()
+        XCTAssertEqual(recorder.segments.first?.inProgress, false)
+        XCTAssertNotNil(recorder.segments.first?.endTime)
+        XCTAssertLessThan(recorder.segments.first!.endTime!, Date().timeIntervalSince1970)
     }
 
-    func testRecordingOneSegmentWithEnding() {
-        //        let emmiter = MockEmmiter()
+    func testRecordingOneSegmentClosure() {
         let recorder = XRayRecorder()
 
-        let testName = UUID().uuidString
-        let testparentId = UUID().uuidString
-        _ = recorder.beginSubSegment(name: testName, parentId: testparentId)
-        //        recorder.endSubSegment()
-        //        _ = recorder.sendSegments(emmiter: emmiter)
-        //
-        //        XCTAssertEqual(emmiter.documents.count, 1)
-        //        XCTAssertEqual(emmiter.documents.first?.count, 1)
-        //
-        //        let segment = emmiter.documents.first?.first
-        //        XCTAssertNotNil(segment)
-        //        XCTAssertEqual(segment?.name, testName)
-        //        XCTAssertEqual(segment?.parentId, testparentId)
-        //        XCTAssertEqual(segment?.subsegments.count, 0)
+        let segmentName = UUID().uuidString
+        let segmentParentId = Segment.generateId()
+
+        recorder.segment(name: segmentName, parentId: segmentParentId) { segment in
+            XCTAssertNotNil(recorder.segments.first)
+            XCTAssertEqual(recorder.segments.first?.name, segmentName)
+            XCTAssertEqual(recorder.segments.first?.parentId, segmentParentId)
+            XCTAssertEqual(recorder.segments.first?.inProgress, true)
+        }
+        XCTAssertEqual(recorder.segments.first?.inProgress, false)
+        XCTAssertNotNil(recorder.segments.first?.endTime)
+        XCTAssertLessThan(recorder.segments.first!.endTime!, Date().timeIntervalSince1970)
     }
 
-    func testRecordingTwoSegmentNoEnding() {
-        //        let emmiter = MockEmmiter()
-        let recorder = XRayRecorder()
-
-        //        let testName = UUID().uuidString
-        //        let testTraceId = TraceId()
-        //        let segmentId = recorder.beginSubSegment(
-        //            name: testName,
-        //            parentId: nil)
-        //
-        //        let testName2 = UUID().uuidString
-        //        _ = recorder.beginSubSegment(
-        //            name: testName2,
-        //            parentId: segmentId)
-        //
-        //        _ = recorder.sendSegments(emmiter: emmiter)
-        //
-        //        XCTAssertEqual(emmiter.documents.count, 1)
-        //
-        //        let segments = emmiter.documents.first
-        //        XCTAssertEqual(segments?.count, 1)
-        //
-        //        let segment = segments?.first
-        //        XCTAssertNotNil(segment)
-        //        XCTAssertEqual(segment?.name, testName)
-        //        XCTAssertEqual(segment?.traceId, testTraceId.description)
-        //        XCTAssertEqual(segment?.parentId, nil)
-        //        XCTAssertEqual(segment?.subsegments.count, 1)
-        //
-        //        let subsegment = segment?.subsegments.first
-        //        XCTAssertNotNil(subsegment)
-        //        XCTAssertEqual(subsegment?.name, testName2)
-        //        XCTAssertEqual(subsegment?.traceId, testTraceId.description)
-        //        XCTAssertEqual(subsegment?.parentId, segmentId)
-        //        XCTAssertEqual(subsegment?.subsegments.count, 0)
-    }
+    // TODO: define more tests
 }

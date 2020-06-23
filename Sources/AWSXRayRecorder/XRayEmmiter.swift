@@ -46,6 +46,6 @@ public class XRayEmmiter {
 
 extension XRayRecorder.Segment {
     fileprivate var isReady: Bool {
-        endTime != nil
+        inProgress == false
     }
 }

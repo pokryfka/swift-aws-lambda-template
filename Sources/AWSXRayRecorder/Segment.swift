@@ -3,6 +3,11 @@ import Foundation
 import NIOConcurrencyHelpers
 
 extension XRayRecorder {
+    enum SegmentError: Error {
+        case invalidID(String)
+        //            case AlreadyEmitted
+
+    }
 
     /// A segment records tracing information about a request that your application serves.
     /// At a minimum, a segment records the name, ID, start time, trace ID, and end time of the request.
@@ -10,10 +15,6 @@ extension XRayRecorder {
     /// # References
     /// - [AWS X-Ray segment documents](https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html)
     public class Segment: Encodable {
-        enum SegmentError: Error {
-            //            case AlreadyEmitted
-        }
-
         enum AnnotationValue {
             case string(String)
             case int(Int)
@@ -126,20 +127,9 @@ extension XRayRecorder {
 
 }
 
-extension XRayRecorder.Segment {
-    public func beginSubSegment(name: String) -> XRayRecorder.Segment {
-        lock.withLock {
-            let newSegment = XRayRecorder.Segment(
-                name: name, traceId: traceId, parentId: id, subsegment: true)
-            if (subsegments?.count ?? 0) > 0 {
-                subsegments?.append(newSegment)
-            } else {
-                subsegments = [newSegment]
-            }
-            return newSegment
-        }
-    }
+// MARK: End time
 
+extension XRayRecorder.Segment {
     /// Updates `endTime` of the Segment, ends subsegments if not ended.
     public func end() {
         let now = Date().timeIntervalSince1970
@@ -164,6 +154,8 @@ extension XRayRecorder.Segment {
         }
     }
 }
+
+// MARK: Annotations and Metadata
 
 extension XRayRecorder.Segment {
     func addAnnotations(_ newElements: Annotations) {
@@ -223,9 +215,39 @@ extension XRayRecorder.Segment.AnnotationValue: Encodable {
     }
 }
 
+// MARK: Subsegments
+
+extension XRayRecorder.Segment {
+    public func beginSubSegment(name: String) -> XRayRecorder.Segment {
+        lock.withLock {
+            let newSegment = XRayRecorder.Segment(
+                name: name, traceId: traceId, parentId: id, subsegment: true)
+            if (subsegments?.count ?? 0) > 0 {
+                subsegments?.append(newSegment)
+            } else {
+                subsegments = [newSegment]
+            }
+            return newSegment
+        }
+    }
+}
+
+// MARK: Id
+
 extension XRayRecorder.Segment {
     /// - returns: A 64-bit identifier for the segment, unique among segments in the same trace, in 16 hexadecimal digits.
     static func generateId() -> String {
         String(format: "%llx", UInt64.random(in: UInt64.min...UInt64.max) | 1 << 63)
+    }
+
+    static func validateId(_ string: String) throws -> String {
+        let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
+        guard
+            16 == string.count,
+            nil == string.rangeOfCharacter(from: invalidCharacters)
+        else {
+            throw XRayRecorder.SegmentError.invalidID(string)
+        }
+        return string
     }
 }

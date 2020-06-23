@@ -6,9 +6,8 @@
         //   `swift test --generate-linuxmain`
         // to regenerate.
         static let __allTests__AWSXRayRecorderTests = [
-            ("testRecordingOneSegmentNoEnding", testRecordingOneSegmentNoEnding),
-            ("testRecordingOneSegmentWithEnding", testRecordingOneSegmentWithEnding),
-            ("testRecordingTwoSegmentNoEnding", testRecordingTwoSegmentNoEnding),
+            ("testRecordingOneSegment", testRecordingOneSegment),
+            ("testRecordingOneSegmentClosure", testRecordingOneSegmentClosure),
         ]
     }
 
@@ -17,7 +16,8 @@
         //   `swift test --generate-linuxmain`
         // to regenerate.
         static let __allTests__AWSXRaySegmentTests = [
-            ("testSegmentRandomId", testSegmentRandomId)
+            ("testSegmentInvalidId", testSegmentInvalidId),
+            ("testSegmentRandomId", testSegmentRandomId),
         ]
     }
 
@@ -26,10 +26,13 @@
         //   `swift test --generate-linuxmain`
         // to regenerate.
         static let __allTests__AWSXRayTraceTests = [
-            ("testTraceHeaderInvalid", testTraceHeaderInvalid),
+            ("testTraceHeaderInvalidFormat", testTraceHeaderInvalidFormat),
+            ("testTraceHeaderInvalidParent", testTraceHeaderInvalidParent),
+            ("testTraceHeaderInvalidRoot", testTraceHeaderInvalidRoot),
             ("testTraceHeaderRootNoParent", testTraceHeaderRootNoParent),
             ("testTraceHeaderRootWithParent", testTraceHeaderRootWithParent),
             ("testTraceOldId", testTraceOldId),
+            ("testTraceOverflowId", testTraceOverflowId),
             ("testTraceRandomId", testTraceRandomId),
             ("testTraceRandomIdenifier", testTraceRandomIdenifier),
         ]

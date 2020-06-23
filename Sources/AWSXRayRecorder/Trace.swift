@@ -12,7 +12,8 @@ extension XRayRecorder {
     /// A `trace_id` consists of three numbers separated by hyphens.
     /// For example, `1-58406520-a006649127e371903a2de979`. This includes:
     /// - The version number, that is, 1.
-    /// - The time of the original request, in Unix epoch time, in **8 hexadecimal digits**. For example, 10:00AM December 1st, 2016 PST in epoch time is `1480615200 seconds`, or `58406520` in hexadecimal digits.
+    /// - The time of the original request, in Unix epoch time, in **8 hexadecimal digits**.
+    ///   For example, 10:00AM December 1st, 2016 PST in epoch time is `1480615200` seconds, or `58406520` in hexadecimal digits.
     /// - A 96-bit identifier for the trace, globally unique, in **24 hexadecimal digits**.
     ///
     /// # References
@@ -21,7 +22,7 @@ extension XRayRecorder {
         /// The version number, that is, 1.
         let version: UInt = 1
         /// The time of the original request, in Unix epoch time, in **8 hexadecimal digits**.
-        /// For example, 10:00AM December 1st, 2016 PST in epoch time is 1480615200 seconds, or 58406520 in hexadecimal digits.
+        /// For example, 10:00AM December 1st, 2016 PST in epoch time is `1480615200` seconds, or `58406520` in hexadecimal digits.
         let date: String
         /// A 96-bit identifier for the trace, globally unique, in **24 hexadecimal digits**.
         let identifier: String
@@ -63,8 +64,8 @@ extension XRayRecorder.TraceID {
         identifier = Self.generateIdentifier()
     }
 
-    init(date: Double) {
-        self.date = String(format: "%08x", Int(date))
+    init(secondsSince1970: Double) {
+        date = String(format: "%08x", Int(secondsSince1970))
         identifier = Self.generateIdentifier()
     }
 
@@ -128,16 +129,21 @@ extension XRayRecorder {
 }
 
 extension XRayRecorder.TraceHeader {
-    /// Generate value with new Trace ID.
-    init(parentId: String? = nil, sampled: Bool = true) {
+    /// Creates new Trace Header.
+    /// - parameter parentId: parent segment ID
+    /// - parameter sampled: sampling decision
+    init(parentId: String? = nil, sampled: Bool = true) throws {
         root = XRayRecorder.TraceID()
-        self.parentId = parentId
+        if let parentId = parentId {
+            self.parentId = try XRayRecorder.Segment.validateId(parentId)
+        } else {
+            self.parentId = nil
+        }
         self.sampled = sampled
     }
 
     /// Parses and validates string with Tracing Header.
     public init(string: String) throws {
-        // TODO: cleanup, add test case for string with ";" but without "="
         let values = string.split(separator: ";").map { $0.split(separator: "=") }
         let numValues = values.count
         guard
@@ -147,18 +153,21 @@ extension XRayRecorder.TraceHeader {
         else {
             throw XRayRecorder.TraceError.invalidTraceHeader(string)
         }
+
+        self.root = try XRayRecorder.TraceID(string: String(values[0][1]))
+
         let sampledValue = values[numValues - 1][1]
         guard
             sampledValue == "1" || sampledValue == "0"
         else {
             throw XRayRecorder.TraceError.invalidTraceHeader(string)
         }
-        self.root = try XRayRecorder.TraceID(string: String(values[0][1]))
+        self.sampled = sampledValue == "1"
+
         if values[1][0] == "Parent" {
-            self.parentId = String(values[1][1])
+            self.parentId = try XRayRecorder.Segment.validateId(String(values[1][1]))
         } else {
             self.parentId = nil
         }
-        self.sampled = sampledValue == "1"
     }
 }

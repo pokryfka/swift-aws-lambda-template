@@ -6,19 +6,40 @@ import XCTest
 private typealias TraceID = XRayRecorder.TraceID
 private typealias TraceHeader = XRayRecorder.TraceHeader
 private typealias TraceError = XRayRecorder.TraceError
+private typealias SegmentError = XRayRecorder.SegmentError
+
+extension TraceID {
+    fileprivate static let length: Int = 1 + 8 + 24 + 2
+    fileprivate static let dateLength: Int = 8
+    fileprivate static let dateInvalidCharacters = CharacterSet(charactersIn: "abcdef0123456789")
+        .inverted
+    fileprivate static let identifierLength: Int = 24
+    fileprivate static let identifierInvalidCharacters = CharacterSet(
+        charactersIn: "abcdef0123456789"
+    )
+    .inverted
+
+    func test() {
+        XCTAssertEqual(date.count, Self.dateLength)
+        XCTAssertNil(date.rangeOfCharacter(from: Self.dateInvalidCharacters))
+        XCTAssertEqual(identifier.count, Self.identifierLength)
+        XCTAssertNil(identifier.rangeOfCharacter(from: Self.identifierInvalidCharacters))
+        XCTAssertEqual(String(describing: self).count, Self.length)
+        XCTAssertNoThrow(try TraceID(string: String(describing: self)))
+    }
+}
 
 final class AWSXRayTraceTests: XCTestCase {
-    
+
     // MARK: TraceID
-    
+
     func testTraceRandomIdenifier() {
         let numTests = 1000
-        let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
         var values = Set<String>()
         for _ in 0..<numTests {
             let identifier = TraceID.generateIdentifier()
-            XCTAssertEqual(identifier.count, 24)
-            XCTAssertNil(identifier.rangeOfCharacter(from: invalidCharacters))
+            XCTAssertEqual(identifier.count, TraceID.identifierLength)
+            XCTAssertNil(identifier.rangeOfCharacter(from: TraceID.identifierInvalidCharacters))
             values.insert(identifier)
         }
         XCTAssertEqual(values.count, numTests)
@@ -26,44 +47,28 @@ final class AWSXRayTraceTests: XCTestCase {
 
     func testTraceRandomId() {
         let numTests = 1000
-        let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
         var values = Set<TraceID>()
         for _ in 0..<numTests {
             let traceId = TraceID()
-            XCTAssertEqual(traceId.date.count, 8)
-            XCTAssertNil(traceId.date.rangeOfCharacter(from: invalidCharacters))
-            XCTAssertEqual(traceId.identifier.count, 24)
-            XCTAssertNil(traceId.identifier.rangeOfCharacter(from: invalidCharacters))
-            XCTAssertNoThrow(try TraceID(string: String(describing: traceId)))
+            traceId.test()
             values.insert(traceId)
         }
         XCTAssertEqual(values.count, numTests)
     }
 
     func testTraceOldId() {
-        let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
-        let traceId = TraceID(date: 1)
-        XCTAssertEqual(traceId.date.count, 8)
-        XCTAssertNil(traceId.date.rangeOfCharacter(from: invalidCharacters))
-        XCTAssertEqual(traceId.identifier.count, 24)
-        XCTAssertNil(traceId.identifier.rangeOfCharacter(from: invalidCharacters))
-        XCTAssertNoThrow(try TraceID(string: String(describing: traceId)))
+        let traceId = TraceID(secondsSince1970: 1)
+        traceId.test()
     }
-    
+
     func testTraceOverflowId() {
-        let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
-        let traceId = TraceID(date: 0xa12345678)
-        XCTAssertEqual(traceId.date.count, 8)
-        XCTAssertNil(traceId.date.rangeOfCharacter(from: invalidCharacters))
-        XCTAssertEqual(traceId.identifier.count, 24)
-        XCTAssertNil(traceId.identifier.rangeOfCharacter(from: invalidCharacters))
-        XCTAssertNoThrow(try TraceID(string: String(describing: traceId)))
-        
-        XCTAssertEqual(traceId.date, TraceID(date: 0xb12345678).date)
+        let traceId = TraceID(secondsSince1970: 0xa_1234_5678)
+        traceId.test()
+        XCTAssertEqual(traceId.date, TraceID(date: 0xb_1234_5678).date)
     }
 
     // MARK: TraceHeader
-    
+
     func testTraceHeaderRootNoParent() {
         let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Sampled=1"
         let value = try? TraceHeader(string: string)
@@ -75,17 +80,43 @@ final class AWSXRayTraceTests: XCTestCase {
 
     func testTraceHeaderRootWithParent() {
         let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1"
-        let value = try? TraceHeader(string: string)
-        XCTAssertNotNil(value)
-        XCTAssertEqual(value?.root.description, "1-5759e988-bd862e3fe1be46a994272793")
-        XCTAssertEqual(value?.parentId, "53995c3f42cd8ad8")
-        XCTAssertEqual(value?.sampled, true)
+        do {
+            let value = try TraceHeader(string: string)
+            XCTAssertEqual(value.root.description, "1-5759e988-bd862e3fe1be46a994272793")
+            XCTAssertEqual(value.parentId, "53995c3f42cd8ad8")
+            XCTAssertEqual(value.sampled, true)
+        } catch {
+            XCTFail()
+        }
     }
-    func testTraceHeaderInvalid() {
+
+    func testTraceHeaderInvalidFormat() {
+        let string = "Root2799;Sampled=1"
+        XCTAssertThrowsError(try TraceHeader(string: string)) { error in
+            if case TraceError.invalidTraceHeader(let invalidValue) = error {
+                XCTAssertEqual(invalidValue, "Root2799;Sampled=1")
+            } else {
+                XCTFail()
+            }
+        }
+    }
+
+    func testTraceHeaderInvalidRoot() {
         let string = "Root=-2799;Parent=-15277;Sampled=1"
         XCTAssertThrowsError(try TraceHeader(string: string)) { error in
             if case TraceError.invalidTraceID(let invalidValue) = error {
                 XCTAssertEqual(invalidValue, "-2799")
+            } else {
+                XCTFail()
+            }
+        }
+    }
+
+    func testTraceHeaderInvalidParent() {
+        let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=-15277;Sampled=1"
+        XCTAssertThrowsError(try TraceHeader(string: string)) { error in
+            if case SegmentError.invalidID(let invalidValue) = error {
+                XCTAssertEqual(invalidValue, "-15277")
             } else {
                 XCTFail()
             }
