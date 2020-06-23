@@ -26,6 +26,10 @@ extension JSONEncoder {
 
 private struct HelloWorldIn: Decodable {
     let secondsFromGMT: Int
+
+    enum CodingKeys: String, CodingKey {
+        case secondsFromGMT = "seconds_from_gmt"
+    }
 }
 
 private struct HelloWorldOut: Encodable {
@@ -43,12 +47,16 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias In = APIGateway.Request
     typealias Out = APIGateway.Response
 
-    private let jsonDecoder = JSONDecoder()
+    private let jsonDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        return decoder
+    }()
 
     private let jsonEncoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
+        encoder.keyEncodingStrategy = .convertToSnakeCase
         return encoder
     }()
 
