@@ -1,6 +1,7 @@
+import XCTest
+
 import AWSXRayRecorderTests
 import HelloWorldTests
-import XCTest
 
 var tests = [XCTestCaseEntry]()
 tests += AWSXRayRecorderTests.__allTests()

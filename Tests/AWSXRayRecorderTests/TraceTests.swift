@@ -6,6 +6,7 @@ import XCTest
 private typealias TraceID = XRayRecorder.TraceID
 private typealias TraceHeader = XRayRecorder.TraceHeader
 private typealias TraceError = XRayRecorder.TraceError
+private typealias SampleDecision = XRayRecorder.SampleDecision
 private typealias SegmentError = XRayRecorder.SegmentError
 
 extension TraceID {
@@ -64,27 +65,63 @@ final class AWSXRayTraceTests: XCTestCase {
     func testTraceOverflowId() {
         let traceId = TraceID(secondsSince1970: 0xa_1234_5678)
         traceId.test()
-        XCTAssertEqual(traceId.date, TraceID(date: 0xb_1234_5678).date)
+        XCTAssertEqual(traceId.date, TraceID(secondsSince1970: 0xb_1234_5678).date)
     }
 
     // MARK: TraceHeader
 
-    func testTraceHeaderRootNoParent() {
+    func testTraceHeaderNoParentSampled() {
         let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Sampled=1"
         let value = try? TraceHeader(string: string)
         XCTAssertNotNil(value)
         XCTAssertEqual(value?.root.description, "1-5759e988-bd862e3fe1be46a994272793")
         XCTAssertNil(value?.parentId)
-        XCTAssertEqual(value?.sampled, true)
+        XCTAssertEqual(value?.sampled, SampleDecision.sampled)
     }
 
-    func testTraceHeaderRootWithParent() {
+    func testTraceHeaderWithParentSampled() {
         let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1"
         do {
             let value = try TraceHeader(string: string)
             XCTAssertEqual(value.root.description, "1-5759e988-bd862e3fe1be46a994272793")
             XCTAssertEqual(value.parentId, "53995c3f42cd8ad8")
-            XCTAssertEqual(value.sampled, true)
+            XCTAssertEqual(value.sampled, SampleDecision.sampled)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testTraceHeaderWithParentNotSampled() {
+        let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=0"
+        do {
+            let value = try TraceHeader(string: string)
+            XCTAssertEqual(value.root.description, "1-5759e988-bd862e3fe1be46a994272793")
+            XCTAssertEqual(value.parentId, "53995c3f42cd8ad8")
+            XCTAssertEqual(value.sampled, SampleDecision.notSampled)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testTraceHeaderWithParentUnkownUnkownSample() {
+        let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8"
+        do {
+            let value = try TraceHeader(string: string)
+            XCTAssertEqual(value.root.description, "1-5759e988-bd862e3fe1be46a994272793")
+            XCTAssertEqual(value.parentId, "53995c3f42cd8ad8")
+            XCTAssertEqual(value.sampled, SampleDecision.unknown)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testTraceHeaderWithParentUnkownRequestedSample() {
+        let string = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=?"
+        do {
+            let value = try TraceHeader(string: string)
+            XCTAssertEqual(value.root.description, "1-5759e988-bd862e3fe1be46a994272793")
+            XCTAssertEqual(value.parentId, "53995c3f42cd8ad8")
+            XCTAssertEqual(value.sampled, SampleDecision.requested)
         } catch {
             XCTFail()
         }

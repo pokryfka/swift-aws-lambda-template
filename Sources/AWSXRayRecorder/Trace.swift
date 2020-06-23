@@ -3,6 +3,7 @@ import Foundation
 extension XRayRecorder {
     enum TraceError: Error {
         case invalidTraceID(String)
+        case invalidSampleDecision(String)
         case invalidTraceHeader(String)
     }
 }
@@ -90,6 +91,17 @@ extension XRayRecorder.TraceID {
 }
 
 extension XRayRecorder {
+    /// # References
+    /// - [AWS X-Ray concepts - Sampling](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-sampling)
+    enum SampleDecision: String, Encodable {
+        case sampled = "Sampled=1"
+        case notSampled = "Sampled=0"
+        case unknown = ""
+        case requested = "Sampled=?"
+    }
+}
+
+extension XRayRecorder {
 
     /// All requests are traced, up to a configurable minimum.
     /// After reaching that minimum, a percentage of requests are traced to avoid unnecessary cost.
@@ -124,7 +136,7 @@ extension XRayRecorder {
         /// parent segment ID
         let parentId: String?
         /// sampling decision
-        let sampled: Bool
+        let sampled: XRayRecorder.SampleDecision
     }
 }
 
@@ -132,7 +144,7 @@ extension XRayRecorder.TraceHeader {
     /// Creates new Trace Header.
     /// - parameter parentId: parent segment ID
     /// - parameter sampled: sampling decision
-    init(parentId: String? = nil, sampled: Bool = true) throws {
+    init(parentId: String? = nil, sampled: XRayRecorder.SampleDecision) throws {
         root = XRayRecorder.TraceID()
         if let parentId = parentId {
             self.parentId = try XRayRecorder.Segment.validateId(parentId)
@@ -144,30 +156,34 @@ extension XRayRecorder.TraceHeader {
 
     /// Parses and validates string with Tracing Header.
     public init(string: String) throws {
-        let values = string.split(separator: ";").map { $0.split(separator: "=") }
-        let numValues = values.count
+        let values = string.split(separator: ";")
         guard
-            numValues >= 2, numValues <= 3,
-            values[0][0] == "Root",
-            values[numValues - 1][0] == "Sampled"
+            values.count >= 2, values.count <= 3,
+            values[0].starts(with: "Root=")
         else {
             throw XRayRecorder.TraceError.invalidTraceHeader(string)
         }
 
-        self.root = try XRayRecorder.TraceID(string: String(values[0][1]))
+        self.root = try XRayRecorder.TraceID(string: String(values[0].dropFirst("Root=".count)))
 
-        let sampledValue = values[numValues - 1][1]
-        guard
-            sampledValue == "1" || sampledValue == "0"
-        else {
-            throw XRayRecorder.TraceError.invalidTraceHeader(string)
-        }
-        self.sampled = sampledValue == "1"
-
-        if values[1][0] == "Parent" {
-            self.parentId = try XRayRecorder.Segment.validateId(String(values[1][1]))
+        var valueIndex = 1
+        if values[valueIndex].starts(with: "Parent=") {
+            parentId = try XRayRecorder.Segment.validateId(
+                String(values[1].dropFirst("Parent=".count)))
+            valueIndex += 1
         } else {
-            self.parentId = nil
+            parentId = nil
+        }
+
+        if valueIndex < values.count {
+            guard
+                let value = XRayRecorder.SampleDecision(rawValue: String(values[valueIndex]))
+            else {
+                throw XRayRecorder.TraceError.invalidTraceHeader(string)
+            }
+            sampled = value
+        } else {
+            sampled = .unknown
         }
     }
 }

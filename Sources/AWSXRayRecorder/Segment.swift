@@ -5,8 +5,7 @@ import NIOConcurrencyHelpers
 extension XRayRecorder {
     enum SegmentError: Error {
         case invalidID(String)
-        //            case AlreadyEmitted
-
+        //case alreadyEmitted
     }
 
     /// A segment records tracing information about a request that your application serves.
@@ -64,6 +63,9 @@ extension XRayRecorder {
         ///
         /// # Trace ID Security
         /// Trace IDs are visible in response headers. Generate trace IDs with a secure random algorithm to ensure that attackers cannot calculate future trace IDs and send requests with those IDs to your application.
+        ///
+        /// # Subsegment
+        /// Required only if sending a subsegment separately.
         let traceId: TraceID
 
         /// **number** that is the time the segment was created, in floating point seconds in epoch time.
@@ -82,12 +84,20 @@ extension XRayRecorder {
         /// Only send one complete segment, and one or zero in-progress segments, per request.
         var inProgress: Bool { endTime == nil }
 
-        // MARK: Optional Segment Fields
-
         /// A subsegment ID you specify if the request originated from an instrumented application.
         /// The X-Ray SDK adds the parent subsegment ID to the tracing header for downstream HTTP calls.
         /// In the case of nested subsguments, a subsegment can have a segment or a subsegment as its parent.
+        ///
+        /// # Subsegment
+        /// Required only if sending a subsegment separately.
+        /// In the case of nested subsegments, a subsegment can have a segment or a subsegment as its parent.
         let parentId: String?
+
+        /// # Subsegment
+        /// Required only if sending a subsegment separately.
+        private(set) var type: SegmentType?
+
+        // MARK: Optional Segment Fields
 
         /// annotations object with key-value pairs that you want X-Ray to index for search.
         private var annotations: Annotations?
@@ -98,16 +108,13 @@ extension XRayRecorder {
         /// array of subsegment objects.
         private var subsegments: [Segment]?
 
-        /// Required only if sending a subsegment separately.
-        private(set) var type: SegmentType?
-
         init(name: String, traceId: TraceID, parentId: String?, subsegment: Bool) {
             self.name = name
             self.id = Self.generateId()
             self.traceId = traceId
             self.startTime = Date().timeIntervalSince1970
             self.parentId = parentId
-            if parentId != nil && subsegment {
+            if subsegment && parentId != nil {
                 self.type = .subsegment
             }
         }
@@ -239,7 +246,11 @@ extension XRayRecorder.Segment {
     static func generateId() -> String {
         String(format: "%llx", UInt64.random(in: UInt64.min...UInt64.max) | 1 << 63)
     }
+}
 
+// MARK: Validation
+
+extension XRayRecorder.Segment {
     static func validateId(_ string: String) throws -> String {
         let invalidCharacters = CharacterSet(charactersIn: "abcdef0123456789").inverted
         guard
@@ -250,4 +261,6 @@ extension XRayRecorder.Segment {
         }
         return string
     }
+
+    // TODO: validate name
 }
