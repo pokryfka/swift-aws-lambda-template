@@ -45,7 +45,6 @@ private struct HelloWorldOut: Encodable {
 private let handler: Lambda.CodableClosure<APIGateway.Request, APIGateway.Response> = {
     context, request, callback in
     do {
-//        fatalError()
         let now = Date()
         let secondsFromGMT: Int
         if let body = request.body {
