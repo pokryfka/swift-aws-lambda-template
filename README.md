@@ -74,6 +74,8 @@ $ swift test
 
 ### Invoking events (locally)
 
+Set the `LOCAL_LAMBDA_SERVER_ENABLED` environment variable to `true` .
+
 #### HelloWorldAPI
 
 Build and run Lambda:

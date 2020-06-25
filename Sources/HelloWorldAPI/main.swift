@@ -79,10 +79,4 @@ private let handler: Lambda.CodableClosure<APIGateway.Request, APIGateway.Respon
     }
 }
 
-#if DEBUG
-    try Lambda.withLocalServer {
-        Lambda.run(handler)
-    }
-#else
-    Lambda.run(handler)
-#endif
+Lambda.run(handler)
