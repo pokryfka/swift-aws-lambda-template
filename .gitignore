@@ -89,5 +89,12 @@ fastlane/test_output
 
 iOSInjectionProject/
 
+# Swift
+Package.resolved
+
+# Xcode
+xcuserdata/
+.swiftpm/xcode/
+
 # SAM
 samconfig.toml
