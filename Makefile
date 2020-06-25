@@ -25,6 +25,15 @@ test:
 docker_image:
 	docker inspect swift-lambda-builder > /dev/null 2>&1 || docker build -t swift-lambda-builder .
 
+.PHONY: test_linux
+test_linux: docker_image
+	docker run \
+	  --rm \
+	  --volume "$(shell pwd)/:/src" \
+	  --workdir "/src/" \
+	  swift-lambda-builder \
+	  swift test
+
 .PHONY: build_linux
 build_linux: docker_image
 	docker run \
