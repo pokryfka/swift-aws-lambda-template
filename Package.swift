@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-aws-lambda-template",
     platforms: [
-        .macOS(.v10_13),
+        .macOS(.v10_14),
     ],
     products: [
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
@@ -15,26 +15,29 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
-        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.1.0"),
+        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.2.1"),
     ],
     targets: [
         .target(
             name: "HelloWorldAPI",
             dependencies: [
+                .byName(name: "HelloWorld"),
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-                .byName(name: "HelloWorld"),
+                .product(name: "AWSXRayRecorderLambda", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRayUDPEmitter", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(
             name: "HelloWorldScheduled",
             dependencies: [
+                .byName(name: "HelloWorld"),
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
                 .product(name: "AWSXRayRecorderLambda", package: "aws-xray-sdk-swift"),
-                .byName(name: "HelloWorld"),
+                .product(name: "AWSXRayUDPEmitter", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(

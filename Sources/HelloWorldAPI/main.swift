@@ -88,45 +88,62 @@ Lambda.run(handler)
 
 #else
 
+import AWSXRayRecorder
+import AWSXRayRecorderLambda
+import AWSXRayUDPEmitter
+
 import NIO
 
 private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias In = APIGateway.Request
     typealias Out = APIGateway.Response
 
+    private let recorder = XRayRecorder()
+    private let emmiter = XRayUDPEmitter()
+
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
         do {
-            let now = Date()
-            let secondsFromGMT: Int
-            if let body = event.body {
-                let input = try jsonDecoder.decode(type: HelloWorldIn.self, from: body)
-                secondsFromGMT = input.secondsFromGMT
-            } else {
-                secondsFromGMT = 0
+            let response: APIGateway.Response = try recorder.segment(name: "HelloWorldAPIHandler", context: context) { segment in
+                let now = Date()
+                let secondsFromGMT: Int
+                if let body = event.body {
+                    let input = try jsonDecoder.decode(type: HelloWorldIn.self, from: body)
+                    secondsFromGMT = input.secondsFromGMT
+                } else {
+                    secondsFromGMT = 0
+                }
+                let greetingHour = try segment.subsegment(name: "Hour") { _ in
+                    try hour(onDate: now, inTimeZoneWithSecondsFromGMT: secondsFromGMT)
+                }
+                let greetingMessage = try segment.subsegment(name: "Greeting") { _ in
+                    try greeting(atHour: greetingHour)
+                }
+                let output = HelloWorldOut(
+                    now: now,
+                    secondsFromGMT: secondsFromGMT,
+                    hour: greetingHour,
+                    message: greetingMessage
+                )
+                let body: String? = try jsonEncoder.encode(value: output)
+                let response = APIGateway.Response(
+                    statusCode: HTTPResponseStatus.ok,
+                    headers: ["Content-Type": "application/json"],
+                    body: body
+                )
+                return response
             }
-            let greetingHour = try hour(onDate: now, inTimeZoneWithSecondsFromGMT: secondsFromGMT)
-            let greetingMessage = try greeting(atHour: greetingHour)
-            let output = HelloWorldOut(
-                now: now,
-                secondsFromGMT: secondsFromGMT,
-                hour: greetingHour,
-                message: greetingMessage
-            )
-            let body: String? = try jsonEncoder.encode(value: output)
-            let response = APIGateway.Response(
-                statusCode: HTTPResponseStatus.ok,
-                headers: ["Content-Type": "application/json"],
-                body: body
-            )
-            return context.eventLoop.makeSucceededFuture(response)
+            return emmiter.send(segments: recorder.removeAll())
+                .map { _ in response }
         } catch let error as DecodingError {
             context.logger.error("DecodingError: \(error)")
             let response = APIGateway.Response(statusCode: HTTPResponseStatus.badRequest)
-            return context.eventLoop.makeSucceededFuture(response)
+            return emmiter.send(segments: recorder.removeAll())
+                .map { _ in response }
         } catch {
             context.logger.error("AnError: \(error)")
             let response = APIGateway.Response(statusCode: HTTPResponseStatus.internalServerError)
-            return context.eventLoop.makeSucceededFuture(response)
+            return emmiter.send(segments: recorder.removeAll())
+                .map { _ in response }
         }
     }
 }
