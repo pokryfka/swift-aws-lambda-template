@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-aws-lambda-template",
     platforms: [
-        .macOS(.v10_13)
+        .macOS(.v10_13),
     ],
     products: [
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
@@ -13,12 +13,8 @@ let package = Package(
         .library(name: "HelloWorld", targets: ["HelloWorld"]),
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/swift-server/swift-aws-lambda-runtime.git",
-            .upToNextMajor(from: "0.2.0")),
-        .package(
-            url: "https://github.com/swift-server/swift-backtrace.git",
-            .upToNextMajor(from: "1.2.0")),
+        .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
+        .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
     ],
     targets: [
         .target(

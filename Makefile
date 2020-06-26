@@ -13,18 +13,6 @@ all: test_linux deploy
 clean:
 	rm -rf .build
 
-.PHONY: lint
-lint:
-	swift-format lint -r Package.swift Sources Tests
-
-.PHONY: format
-format:
-	swift-format format -i -r Package.swift Sources Tests
-
-.PHONY: test
-test:
-	swift test
-
 ${DOCKER_IMAGE_INFO}:
 	docker inspect ${DOCKER_IMAGE} > /dev/null 2>&1 || docker build -t ${DOCKER_IMAGE} .
 	mkdir -p `dirname ${DOCKER_IMAGE_INFO}`
@@ -48,7 +36,8 @@ build_linux: ${DOCKER_IMAGE_INFO}
 	  ${DOCKER_IMAGE} \
 	  bash -c "for product in ${DEPLOY_PACKAGES}; do swift build --product \$${product} ${SWIFT_RELEASE_OPTS}; done"
 
-.PHONY: package
+# TODO: do not repackage if content was not changed
+.PHONY: package_executables
 package_executables: ${DOCKER_IMAGE_INFO} build_linux
 	docker run \
 	  --rm \

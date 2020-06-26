@@ -4,16 +4,16 @@ import XCTest
 
 final class HelloWorldTests: XCTestCase {
     func testGreetings() {
-        for hour in 0..<6 {
+        for hour in 0 ..< 6 {
             XCTAssertEqual(try greeting(atHour: hour), Greeting.night)
         }
-        for hour in 6..<12 {
+        for hour in 6 ..< 12 {
             XCTAssertEqual(try greeting(atHour: hour), Greeting.morning)
         }
-        for hour in 12..<18 {
+        for hour in 12 ..< 18 {
             XCTAssertEqual(try greeting(atHour: hour), Greeting.afternoon)
         }
-        for hour in 18..<24 {
+        for hour in 18 ..< 24 {
             XCTAssertEqual(try greeting(atHour: hour), Greeting.evening)
         }
         for hour in [-1, 24, 25] {
@@ -28,6 +28,6 @@ final class HelloWorldTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testGreetings", testGreetings)
+        ("testGreetings", testGreetings),
     ]
 }

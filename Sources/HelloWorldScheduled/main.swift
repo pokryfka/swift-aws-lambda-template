@@ -6,7 +6,7 @@ import HelloWorld
 Backtrace.install()
 
 private let handler: Lambda.CodableVoidClosure<Cloudwatch.ScheduledEvent> = {
-    context, request, callback in
+    context, _, callback in
     do {
         let greetingHour = try hour()
         let greetingMessage = try greeting(atHour: greetingHour)

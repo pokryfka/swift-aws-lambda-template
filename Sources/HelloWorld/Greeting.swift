@@ -26,13 +26,13 @@ public enum Greeting: String, CustomStringConvertible, Encodable {
 
 public func greeting(atHour hour: Int) throws -> Greeting {
     switch hour {
-    case 0..<6:
+    case 0 ..< 6:
         return .night
-    case 6..<12:
+    case 6 ..< 12:
         return .morning
-    case 12..<18:
+    case 12 ..< 18:
         return .afternoon
-    case 18..<24:
+    case 18 ..< 24:
         return .evening
     default:
         throw GreetingError.invalidHour(hour)

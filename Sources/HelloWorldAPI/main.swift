@@ -66,7 +66,8 @@ private let handler: Lambda.CodableClosure<APIGateway.Request, APIGateway.Respon
         let response = APIGateway.Response(
             statusCode: HTTPResponseStatus.ok,
             headers: ["Content-Type": "application/json"],
-            body: body)
+            body: body
+        )
         callback(.success(response))
     } catch let error as DecodingError {
         context.logger.error("DecodingError: \(error.localizedDescription)")
