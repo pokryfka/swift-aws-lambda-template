@@ -10,14 +10,14 @@ Backtrace.install()
 #if false
 
 private let handler: Lambda.CodableVoidClosure<Cloudwatch.ScheduledEvent> = {
-    context, request, callback in
+    context, _, callback in
     do {
         let greetingHour = try hour()
         let greetingMessage = try greeting(atHour: greetingHour)
         context.logger.info("\(greetingMessage)")
         callback(.success(()))
     } catch {
-        context.logger.error("AnError: \(error.localizedDescription)")
+        context.logger.error("AnError: \(error)")
         callback(.failure(error))
     }
 }
