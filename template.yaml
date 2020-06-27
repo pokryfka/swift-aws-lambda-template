@@ -74,6 +74,16 @@ Resources:
             Description: Example schedule
             Enabled: True
 
+  HelloWorldResolver:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: HelloWorldResolverFunction
+      CodeUri: .build/lambda/HelloWorldResolver.zip
+      Handler: Provided
+      Runtime: provided
+      Layers:
+        - !Ref SwiftRuntimeLayer
+
 Outputs:
   SwiftRuntimeLayer:
     Description: Swift Linux Runtime Lambda Layer

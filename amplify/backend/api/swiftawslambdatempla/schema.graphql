@@ -1,0 +1,8 @@
+type Greeting {
+  hour: Int
+  message: String!
+}
+
+type Query {
+  hello(secondsFromGMT: Int): Greeting! @function(name: "HelloWorldResolverFunction")
+}
