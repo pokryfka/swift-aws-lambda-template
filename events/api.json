@@ -1,5 +1,5 @@
 {
-  "body": "{\"secondsFromGMT\": 3600}",
+  "body": "{\"tz\": \"UTC\"}",
   "resource": "/{proxy+}",
   "path": "/hello",
   "httpMethod": "POST",

@@ -4,24 +4,28 @@ import protocol Foundation.LocalizedError
 import struct Foundation.TimeZone
 
 public enum DateError: Error {
-    case invalidTimeZone(secondsFromGMT: Int)
+    case invalidTimeZone(identifier: String)
     case failedToResolveHour
 }
 
 extension DateError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .invalidTimeZone(let secondsFromGMT):
-            return "Invalid TimeZone with secondsFromGMT: \(secondsFromGMT)"
+        case .invalidTimeZone(let identifier):
+            return "Invalid TimeZone identifier: \(identifier)"
         case .failedToResolveHour:
             return "Failed to resolve hour"
         }
     }
 }
 
-public func hour(onDate date: Date = Date(), inTimeZone timeZone: TimeZone) throws
+public func hour(on date: Date = Date(), inTimeZone timeZoneIdentifier: String? = nil) throws
     -> Int
 {
+    let timeZoneIdentifier = timeZoneIdentifier ?? "UTC"
+    guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
+        throw DateError.invalidTimeZone(identifier: timeZoneIdentifier)
+    }
     var calendar = Calendar.current
     calendar.timeZone = timeZone
     let components = calendar.dateComponents([.hour], from: date)
@@ -29,13 +33,4 @@ public func hour(onDate date: Date = Date(), inTimeZone timeZone: TimeZone) thro
         throw DateError.failedToResolveHour
     }
     return hour
-}
-
-public func hour(
-    onDate date: Date = Date(), inTimeZoneWithSecondsFromGMT secondsFromGMT: Int = 0
-) throws -> Int {
-    guard let timeZone = TimeZone(secondsFromGMT: secondsFromGMT) else {
-        throw DateError.invalidTimeZone(secondsFromGMT: secondsFromGMT)
-    }
-    return try hour(onDate: date, inTimeZone: timeZone)
 }
