@@ -7,6 +7,8 @@ extension HelloWorldTests {
     // to regenerate.
     static let __allTests__HelloWorldTests = [
         ("testGreetings", testGreetings),
+        ("testTimeZoneIdentifiersInvalid", testTimeZoneIdentifiersInvalid),
+        ("testTimeZoneIdentifiersValid", testTimeZoneIdentifiersValid),
     ]
 }
 
