@@ -26,8 +26,9 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     private let emmiter = XRayUDPEmitter()
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
+        let response: APIGateway.Response
         do {
-            let response: APIGateway.Response = try recorder.segment(name: "HelloWorldAPIHandler", context: context) { segment in
+            response = try recorder.segment(name: "HelloWorldAPIHandler", context: context) { segment in
                 var tz: String?
                 if let body = event.body {
                     let input = try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
@@ -39,26 +40,26 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                 }
                 let output = HelloWorldOut(message: greetingMessage)
                 var body = try self.encoder.encode(output, using: context.allocator)
-                let response = APIGateway.Response(
+                return APIGateway.Response(
                     statusCode: HTTPResponseStatus.ok,
                     headers: ["Content-Type": "application/json"],
                     body: body.readString(length: body.readableBytes)
                 )
-                return response
             }
-            return emmiter.send(segments: recorder.removeAll())
-                .map { _ in response }
         } catch let error as DecodingError {
-            context.logger.error("DecodingError: \(error)")
-            let response = APIGateway.Response(statusCode: HTTPResponseStatus.badRequest)
-            return emmiter.send(segments: recorder.removeAll())
-                .map { _ in response }
+            let errorMessage = "DecodingError: \(error)"
+            context.logger.error("\(errorMessage)")
+            response = APIGateway.Response(statusCode: .badRequest, body: errorMessage)
+        } catch DateError.invalidTimeZone(let identifier) {
+            let errorMessage = "DateError.invalidTimeZone: \(identifier)"
+            context.logger.error("\(errorMessage)")
+            response = APIGateway.Response(statusCode: .badRequest, body: errorMessage)
         } catch {
             context.logger.error("AnError: \(error)")
-            let response = APIGateway.Response(statusCode: HTTPResponseStatus.internalServerError)
-            return emmiter.send(segments: recorder.removeAll())
-                .map { _ in response }
+            response = APIGateway.Response(statusCode: .internalServerError)
         }
+        return emmiter.send(segments: recorder.removeAll())
+            .map { _ in response }
     }
 }
 
