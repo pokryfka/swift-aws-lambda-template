@@ -15,4 +15,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag swift-lambda-builder:$(date +%s)
     - name: Build AWS packages
-      run: make package_all
+      run: make package_all -d
