@@ -13,24 +13,16 @@ final class TimeZoneTests: XCTestCase {
             .sorted()
     }()
 
-    override class func setUp() {
-        super.setUp()
-
-        // dump it on linux
-        #if !canImport(ObjectiveC)
-        print("Known Time Zones:", Self.knownTimeZones.joined(separator: "\n"))
-        #endif
-    }
-
     func addKnownTimeZonesAttachment() {
-        #if canImport(ObjectiveC)
+        // TODO: does not work when running commandline:
+        // "Internal error: Attachments cannot be added to the test because activities are disabled."
+        #if false
         let attachment = XCTAttachment(string: Self.knownTimeZones.joined(separator: "\n"))
         attachment.name = "Known Time Zones"
         attachment.lifetime = .deleteOnSuccess
         add(attachment)
-        #else
-        // dump it on linux
-        print(Self.knownTimeZones.joined(separator: "\n"))
+//        #else
+//        print("Known Time Zones:", Self.knownTimeZones.joined(separator: "\n"))
         #endif
     }
 
