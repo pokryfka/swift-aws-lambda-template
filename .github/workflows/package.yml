@@ -16,5 +16,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag swift-lambda-builder:$(date +%s)
-    - name: Build AWS packages
-      run: make package_all -d
+    - name: Build AWS Lambda packages
+      run: make --jobs=1 --debug=j,b package_all package_all
