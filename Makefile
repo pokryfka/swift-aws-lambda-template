@@ -1,6 +1,6 @@
 DEPLOY_PACKAGES=HelloWorldAPI HelloWorldScheduled
 
-DOCKER_IMAGE=swift-lambda-builder
+DOCKER_IMAGE=swift-lambda-builder:latest
 DOCKER_IMAGE_INFO=.build/${DOCKER_IMAGE}.json
 SWIFT_RUNTIME_LAYER=.build/lambda/swift.zip
 SWIFT_RELEASE_OPTS=-c release -Xswiftc -g
