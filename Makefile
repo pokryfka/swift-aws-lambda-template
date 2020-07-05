@@ -18,6 +18,9 @@ ${DOCKER_IMAGE_INFO}:
 	mkdir -p `dirname ${DOCKER_IMAGE_INFO}`
 	docker inspect ${DOCKER_IMAGE} > ${DOCKER_IMAGE_INFO}
 
+.PHONY: docker_image
+docker_image: ${DOCKER_IMAGE_INFO}
+
 .PHONY: test_linux
 test_linux: ${DOCKER_IMAGE_INFO}
 	docker run \
@@ -54,8 +57,10 @@ ${SWIFT_RUNTIME_LAYER}: ${DOCKER_IMAGE_INFO}
 	  ${DOCKER_IMAGE} \
 	  scripts/package.sh swift true
 
+.PHONY: package_libs
 package_libs: ${SWIFT_RUNTIME_LAYER}
 
+.PHONY: package_all
 package_all: package_executables package_libs
 
 .PHONY: deploy
