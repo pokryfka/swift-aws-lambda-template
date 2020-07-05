@@ -3,6 +3,8 @@ name: Package
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
 
@@ -13,6 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag swift-lambda-builder:$(date +%s)
-    - name: Build AWS packages
-      run: make package_all
+      run: docker build . --file Dockerfile --tag swift-lambda-builder:$(date +%s) --tag swift-lambda-builder:latest
+    - name: Build AWS Lambda packages
+      run: make --jobs=1 --debug=j,b package_all package_all
