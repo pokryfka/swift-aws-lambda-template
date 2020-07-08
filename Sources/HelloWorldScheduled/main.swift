@@ -30,7 +30,6 @@ Lambda.run(handler)
 
 import AWSXRayRecorder
 import AWSXRayRecorderLambda
-import AWSXRayUDPEmitter
 import NIO
 
 private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
@@ -38,7 +37,6 @@ private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
     typealias Out = Void
 
     private let recorder = XRayRecorder()
-    private let emitter = XRayUDPEmitter()
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Void> {
         try? recorder.segment(name: "HelloWorldScheduledHandler", context: context) { segment in
@@ -46,7 +44,7 @@ private struct HelloWorldScheduledHandler: EventLoopLambdaHandler {
             let greetingMessage = try segment.subsegment(name: "Greeting") { _ in try greeting(atHour: greetingHour) }
             context.logger.info("\(greetingMessage)")
         }
-        return emitter.send(segments: recorder.removeAll())
+        return recorder.flush(on: context.eventLoop)
     }
 }
 
