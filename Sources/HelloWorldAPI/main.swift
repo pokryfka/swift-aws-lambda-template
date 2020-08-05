@@ -1,8 +1,6 @@
 import AWSLambdaEvents
 import AWSLambdaRuntime
-import AWSXRayRecorder
-import AWSXRayRecorderLambda
-import AWSXRayUDPEmitter
+import AWSXRaySDK
 import Backtrace
 import HelloWorld
 import NIO
@@ -23,12 +21,12 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias Out = APIGateway.Response
 
     private let recorder = XRayRecorder()
-    private let emmiter = XRayUDPEmitter()
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
+        let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
         let response: APIGateway.Response
         do {
-            response = try recorder.segment(name: "HelloWorldAPIHandler", context: context) { segment in
+            response = try recorder.segment(name: "HelloWorldAPIHandler", context: traceContext) { segment in
                 var tz: String?
                 if let body = event.body {
                     let input = try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
@@ -58,7 +56,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             context.logger.error("AnError: \(error)")
             response = APIGateway.Response(statusCode: .internalServerError)
         }
-        return emmiter.send(segments: recorder.removeAll())
+        return recorder.flush(on: context.eventLoop)
             .map { _ in response }
     }
 }

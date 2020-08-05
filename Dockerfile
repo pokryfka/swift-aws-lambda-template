@@ -1,4 +1,4 @@
-FROM swiftlang/swift:nightly-amazonlinux2
+FROM swift:5.2-amazonlinux2
 
 RUN yum -y install \
   git \
@@ -18,4 +18,3 @@ RUN yum -y install \
   tar \
   zip \
   glibc-static
-

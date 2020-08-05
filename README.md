@@ -1,9 +1,25 @@
-# swift-aws-lambda-template
+# Swift AWS Lambda Template
 
 ![Build](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Build/badge.svg)
 ![Package](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Package/badge.svg)
 
-A template for deploying Lambda functions with Swift AWS Lambda Runtime.
+An opinionated template for deploying serverless functions to [AWS Lambda](https://aws.amazon.com/lambda/) using [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime/).
+
+**Goals**:
+
+- streamline deployment
+- promote best practices
+- improve performance
+
+## Features
+
+- [x] build and deploy with single `make deploy`
+- [x] provision all resources using [AWS Cloud​Formation](https://aws.amazon.com/cloudformation/) (with help from [AWS SAM CLI](https://github.com/awslabs/serverless-application-model))
+- [x] AWS Lambda layer with Swift Runtime libraries
+- [x] CI workflows using [GitHub Actions](https://github.com/features/actions)
+- [x] code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
+- [x] printing crash backtraces using [Backtrace](https://github.com/swift-server/swift-backtrace)
+- [x] tracing using [AWS X-Ray SDK for Swift](https://github.com/pokryfka/aws-xray-sdk-swift)
 
 ## Requirements
 
@@ -81,7 +97,7 @@ Set the `LOCAL_LAMBDA_SERVER_ENABLED` environment variable to `true` .
 Build and run Lambda:
 
 ```
-swift run HelloWorldAPI
+$ swift run HelloWorldAPI
 ```
 
 Invoke the Lambda with `curl`:
@@ -103,7 +119,7 @@ $ http POST http://localhost:7000/invoke @events/api.json
 Build and run Lambda:
 
 ```
-swift run HelloWorldScheduled
+$ swift run HelloWorldScheduled
 ```
 
 Invoke the Lambda with `curl`:
@@ -118,6 +134,23 @@ or with [HTTPie](https://httpie.org):
 
 ```
 $ http POST http://localhost:7000/invoke @events/scheduled.json
+```
+
+## Developing
+
+### Code Formatting
+
+Format code using [swiftformat](https://github.com/nicklockwood/SwiftFormat):
+
+```
+swiftformat .
+```
+
+Consider creating [Git pre-commit hook](https://github.com/nicklockwood/SwiftFormat#git-pre-commit-hook)
+
+```
+echo 'swiftformat --lint .' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
 ## References
