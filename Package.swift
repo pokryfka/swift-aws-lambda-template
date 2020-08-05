@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
-       .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.6.0"),
+        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.6.0"),
     ],
     targets: [
         .target(

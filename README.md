@@ -136,6 +136,23 @@ or with [HTTPie](https://httpie.org):
 $ http POST http://localhost:7000/invoke @events/scheduled.json
 ```
 
+## Developing
+
+### Code Formatting
+
+Format code using [swiftformat](https://github.com/nicklockwood/SwiftFormat):
+
+```
+swiftformat .
+```
+
+Consider creating [Git pre-commit hook](https://github.com/nicklockwood/SwiftFormat#git-pre-commit-hook)
+
+```
+echo 'swiftformat --lint .' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
 ## References
 
 - [Introducing Swift AWS Lambda Runtime](https://swift.org/blog/aws-lambda-runtime) by Tom Dordon
