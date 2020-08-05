@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
-       .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.3.0"),
+       .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.6.0"),
     ],
     targets: [
         .target(
@@ -25,7 +25,7 @@ let package = Package(
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-                .product(name: "AWSXRayRecorderLambda", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(
@@ -35,16 +35,17 @@ let package = Package(
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-                .product(name: "AWSXRayRecorderLambda", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(
             name: "HelloWorld",
-            dependencies: []
+            dependencies: [
+            ]
         ),
         .testTarget(
             name: "HelloWorldTests",
-            dependencies: ["HelloWorld"]
+            dependencies: [.target(name: "HelloWorld")]
         ),
     ]
 )
