@@ -36,6 +36,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             response = try recorder.segment(name: "HelloWorldAPIHandler", context: traceContext) { segment in
                 var tz: String?
                 if let body = event.body {
+                    segment.setMetadata("\(body)", forKey: "in")
                     let input = try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
                     tz = input.tz
                 }
@@ -45,11 +46,16 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                 }
                 let output = HelloWorldOut(message: greetingMessage)
                 var body = try self.encoder.encode(output, using: context.allocator)
-                return APIGateway.V2.Response(
+                let contentLength = body.readableBytes
+                let out = APIGateway.V2.Response(
                     statusCode: HTTPResponseStatus.ok,
                     headers: ["Content-Type": "application/json"],
-                    body: body.readString(length: body.readableBytes)
+                    body: body.readString(length: contentLength)
                 )
+                if let body = out.body {
+                    segment.setMetadata("\(body)", forKey: "out")
+                }
+                return out
             }
         } catch let error as DecodingError {
             context.logger.error("DecodingError: \(error)")
