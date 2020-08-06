@@ -16,10 +16,11 @@ An opinionated template for deploying serverless functions to [AWS Lambda](https
 - [x] build and deploy with single `make deploy`
 - [x] provision all resources using [AWS Cloud​Formation](https://aws.amazon.com/cloudformation/) (with help from [AWS SAM CLI](https://github.com/awslabs/serverless-application-model))
 - [x] AWS Lambda layer with Swift Runtime libraries
-- [x] CI workflows using [GitHub Actions](https://github.com/features/actions)
-- [x] code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
 - [x] printing crash backtraces using [Backtrace](https://github.com/swift-server/swift-backtrace)
 - [x] tracing using [AWS X-Ray SDK for Swift](https://github.com/pokryfka/aws-xray-sdk-swift)
+- [x] CI workflows using [GitHub Actions](https://github.com/features/actions)
+- [x] code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
+- [x] generate documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
 
 ## Requirements
 
@@ -127,6 +128,13 @@ Consider creating [Git pre-commit hook](https://github.com/nicklockwood/SwiftFor
 echo 'swiftformat --lint .' > .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
+
+## GitHub Actions
+
+- [Test](.github/workflows/test.yaml) - Run tests
+- [Package](.github/workflows/package.yaml) - Tests creating of packages with lambda functions
+- [Lint](.github/workflows/lint.yaml) - validates code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
+- [Documentation](.github/workflows/documentation.yaml) generates documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
 
 ## References
 
