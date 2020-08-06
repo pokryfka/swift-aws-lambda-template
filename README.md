@@ -131,10 +131,10 @@ chmod +x .git/hooks/pre-commit
 
 ## GitHub Actions
 
-- [Test](.github/workflows/test.yaml) - Run tests
-- [Package](.github/workflows/package.yaml) - Tests creating of packages with lambda functions
-- [Lint](.github/workflows/lint.yaml) - validates code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
-- [Documentation](.github/workflows/documentation.yaml) generates documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
+- [Test](.github/workflows/test.yml) - Run tests
+- [Package](.github/workflows/package.yml) - Tests creating of packages with lambda functions
+- [Lint](.github/workflows/lint.yml) - validates code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
+- [Documentation](.github/workflows/documentation.yml) generates documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
 
 ## References
 
