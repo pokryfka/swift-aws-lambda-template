@@ -65,6 +65,30 @@ Resources:
             Path: /hello
             Method: post
 
+  HelloWorldAPIPerfFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: .build/lambda/HelloWorldAPIPerf.zip
+      Handler: Provided
+      Runtime: provided
+      Layers:
+        - !Ref SwiftRuntimeLayer
+      Policies:
+        - AWSXRayDaemonWriteAccess
+      Events:
+        HelloWorldGetEvent:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
+          Properties:
+            ApiId: !Ref ApiGateway
+            Path: /hello2
+            Method: get
+        HelloWorldPostEvent:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            ApiId: !Ref ApiGateway
+            Path: /hello2
+            Method: post
+
 Outputs:
   SwiftRuntimeLayer:
     Description: Swift Linux Runtime Lambda Layer
@@ -75,7 +99,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
     Description: "API Gateway endpoint URL for for Hello World function"
-    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/hello/"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/hello"
   HelloWorldAPIFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldAPIFunction.Arn
