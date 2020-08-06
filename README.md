@@ -136,6 +136,11 @@ chmod +x .git/hooks/pre-commit
 - [Lint](.github/workflows/lint.yml) - validates code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
 - [Documentation](.github/workflows/documentation.yml) generates documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
 
+Note [github-wiki-publish-action](https://github.com/SwiftDocOrg/github-wiki-publish-action) used by [Documentation](.github/workflows/documentation.yml) workflow requires that your repository has the following:
+
+- A wiki with at least one page in it
+- A secret named `GH_PERSONAL_ACCESS_TOKEN` with a Github personal access token with "repo" authorization
+
 ## References
 
 - [Introducing Swift AWS Lambda Runtime](https://swift.org/blog/aws-lambda-runtime) by Tom Dordon
