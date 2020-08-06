@@ -1,18 +1,4 @@
-import protocol Foundation.LocalizedError
-
-public enum GreetingError: Error {
-    case invalidHour(Int)
-}
-
-extension GreetingError: LocalizedError {
-    public var errorDescription: String? {
-        switch self {
-        case .invalidHour(let hour):
-            return "Invalid hour: \(hour)"
-        }
-    }
-}
-
+/// Greeting message.
 public enum Greeting: String, CustomStringConvertible, Encodable {
     case morning = "Good morning"
     case afternoon = "Good afternoon"
@@ -24,6 +10,15 @@ public enum Greeting: String, CustomStringConvertible, Encodable {
     }
 }
 
+enum GreetingError: Error {
+    case invalidHour(Int)
+}
+
+/// Returns an appropriate greeting message as specified time of the day.
+///
+/// - Parameter hour: hour, 0-23
+/// - Throws: may throw `GreetingError.invalidHour` if the hour is not valid
+/// - Returns: greeting message
 public func greeting(atHour hour: Int) throws -> Greeting {
     switch hour {
     case 0 ..< 6:
