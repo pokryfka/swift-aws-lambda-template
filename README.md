@@ -104,14 +104,14 @@ Invoke the Lambda with `curl`:
 
 ```
 $ curl --header "Content-Type: application/json" \
-  --request POST --data @events/api.json \
+  --request POST --data @events/api2.json \
   http://localhost:7000/invoke
 ```
 
 or with [HTTPie](https://httpie.org):
 
 ```
-$ http POST http://localhost:7000/invoke @events/api.json
+$ http POST http://localhost:7000/invoke @events/api2.json
 ```
 
 #### HelloWorldScheduled
