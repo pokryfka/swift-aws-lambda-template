@@ -12,11 +12,15 @@ let package = Package(
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
         // lambda handler using PureSwift JSON encoder/decoder
         .executable(name: "HelloWorldAPIPerf", targets: ["HelloWorldAPIPerf"]),
+        // shared AWS Lambda code
+        .library(name: "AWSLambdaUtils", targets: ["AWSLambdaUtils"]),
         // shared business logic
         .library(name: "HelloWorld", targets: ["HelloWorld"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
+        //        .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
+//        .package(name: "swift-aws-lambda-runtime", path: "../swift-aws-lambda-runtime"),
+        .package(url: "https://github.com/pokryfka/swift-aws-lambda-runtime.git", .branch("feature/tracing")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
         .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", .upToNextMinor(from: "0.6.0")),
         .package(url: "https://github.com/fabianfett/pure-swift-json.git", .upToNextMinor(from: "0.4.0")),
@@ -29,7 +33,8 @@ let package = Package(
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+//                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRayRecorder", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(
@@ -38,8 +43,15 @@ let package = Package(
                 .byName(name: "HelloWorld"),
                 .product(name: "AWSLambdaRuntimeCore", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+//                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRayRecorder", package: "aws-xray-sdk-swift"),
                 .product(name: "PureSwiftJSON", package: "pure-swift-json"),
+            ]
+        ),
+        .target(
+            name: "AWSLambdaUtils",
+            dependencies: [
+                .product(name: "AWSLambdaRuntimeCore", package: "swift-aws-lambda-runtime"),
             ]
         ),
         .target(

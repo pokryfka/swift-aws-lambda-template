@@ -1,16 +1,18 @@
 import AWSLambdaEvents
 import AWSLambdaRuntime
-import AWSXRaySDK
+import AWSXRayRecorder
+// import AWSXRaySDK
 import Backtrace
 import HelloWorld
 import NIO
 
 Backtrace.install()
 
-private let recorder = XRayRecorder()
-defer {
-    recorder.shutdown()
-}
+// created by lambda runtime and passed in the context
+// private let recorder = XRayRecorder()
+// defer {
+//    recorder.shutdown()
+// }
 
 private struct HelloWorldIn: Decodable {
     /// time zone identifier, default `UTC`
@@ -26,7 +28,9 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias Out = APIGateway.V2.Response
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
-        let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
+//        let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
+        let recorder = context.tracer
+        let traceContext = context.baggage
         let response: Out
         do {
             response = try recorder.segment(name: "HelloWorldAPIHandler", context: traceContext) { segment in
@@ -57,8 +61,9 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             context.logger.error("AnError: \(error)")
             response = APIGateway.V2.Response(statusCode: .internalServerError)
         }
-        return recorder.flush(on: context.eventLoop)
-            .map { _ in response }
+//        return recorder.flush(on: context.eventLoop)
+//            .map { _ in response }
+        return context.eventLoop.makeSucceededFuture(response)
     }
 }
 
