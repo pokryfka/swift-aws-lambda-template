@@ -17,14 +17,14 @@ private struct HelloWorldOut: Encodable {
 }
 
 private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
-    typealias In = APIGateway.Request
-    typealias Out = APIGateway.Response
+    typealias In = APIGateway.V2.Request
+    typealias Out = APIGateway.V2.Response
 
     private let recorder = XRayRecorder()
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
         let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
-        let response: APIGateway.Response
+        let response: Out
         do {
             response = try recorder.segment(name: "HelloWorldAPIHandler", context: traceContext) { segment in
                 var tz: String?
@@ -38,23 +38,21 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                 }
                 let output = HelloWorldOut(message: greetingMessage)
                 var body = try self.encoder.encode(output, using: context.allocator)
-                return APIGateway.Response(
+                return APIGateway.V2.Response(
                     statusCode: HTTPResponseStatus.ok,
                     headers: ["Content-Type": "application/json"],
                     body: body.readString(length: body.readableBytes)
                 )
             }
         } catch let error as DecodingError {
-            let errorMessage = "DecodingError: \(error)"
-            context.logger.error("\(errorMessage)")
-            response = APIGateway.Response(statusCode: .badRequest, body: errorMessage)
+            context.logger.error("DecodingError: \(error)")
+            response = APIGateway.V2.Response(statusCode: .badRequest)
         } catch DateError.invalidTimeZone(let identifier) {
-            let errorMessage = "DateError.invalidTimeZone: \(identifier)"
-            context.logger.error("\(errorMessage)")
-            response = APIGateway.Response(statusCode: .badRequest, body: errorMessage)
+            context.logger.error("DateError.invalidTimeZone: \(identifier)")
+            response = APIGateway.V2.Response(statusCode: .badRequest)
         } catch {
             context.logger.error("AnError: \(error)")
-            response = APIGateway.Response(statusCode: .internalServerError)
+            response = APIGateway.V2.Response(statusCode: .internalServerError)
         }
         return recorder.flush(on: context.eventLoop)
             .map { _ in response }

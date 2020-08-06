@@ -29,6 +29,9 @@ Globals:
         LOG_LEVEL: !Ref LogLevel
 
 Resources:
+  ApiGateway:
+    Type: AWS::Serverless::HttpApi
+
   SwiftRuntimeLayer:
     Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
     Properties:      
@@ -50,34 +53,17 @@ Resources:
         - AWSXRayDaemonWriteAccess
       Events:
         HelloWorldGetEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
           Properties:
+            ApiId: !Ref ApiGateway
             Path: /hello
             Method: get
         HelloWorldPostEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            ApiId: !Ref ApiGateway
             Path: /hello
             Method: post
-    
-  HelloWorldScheduledFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: .build/lambda/HelloWorldScheduled.zip
-      Handler: Provided
-      Runtime: provided
-      Layers:
-        - !Ref SwiftRuntimeLayer
-      Policies:
-        - AWSXRayDaemonWriteAccess
-      Events:
-        HelloWorldScheduledEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(5 minutes)
-            Name: my-schedule
-            Description: Example schedule
-            Enabled: True
 
 Outputs:
   SwiftRuntimeLayer:
@@ -88,8 +74,8 @@ Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Description: "API Gateway endpoint URL for for Hello World function"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/hello/"
   HelloWorldAPIFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldAPIFunction.Arn
