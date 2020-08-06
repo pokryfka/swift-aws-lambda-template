@@ -35,7 +35,6 @@ An opinionated template for deploying serverless functions to [AWS Lambda](https
 The template contains code with two [AWS Lambda](https://aws.amazon.com/lambda/) functions:
 
 - *HelloWorldAPI* handling [Amazon API Gateway](https://aws.amazon.com/api-gateway/) events
-- *HelloWorldScheduled* handling [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) scheduled events
 
 as well as a [AWS SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification.html) used to deploy them using [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html).
 
@@ -67,8 +66,6 @@ This will:
 - deploy (create or update) AWS resources defined in `template.yaml` including Lambda functions and layers 
 
 The *HelloWorldAPI* endpoint is printed after successful deployment, example: `https://xxx.execute-api.us-east-1.amazonaws.com/Prod/hello/` 
-
-Note that, once deployed, the *HelloWorldScheduled* will be invoked every 5 minutes. Remove in [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/) or using [AWS CLI](https://github.com/aws/aws-cli).
 
 ### Troubleshooting
 
@@ -112,28 +109,6 @@ or with [HTTPie](https://httpie.org):
 
 ```
 $ http POST http://localhost:7000/invoke @events/api2.json
-```
-
-#### HelloWorldScheduled
-
-Build and run Lambda:
-
-```
-$ swift run HelloWorldScheduled
-```
-
-Invoke the Lambda with `curl`:
-
-```
-$ curl --header "Content-Type: application/json" \
-  --request POST --data @events/scheduled.json \
-  http://localhost:7000/invoke
-```
-
-or with [HTTPie](https://httpie.org):
-
-```
-$ http POST http://localhost:7000/invoke @events/scheduled.json
 ```
 
 ## Developing

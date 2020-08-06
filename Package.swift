@@ -9,7 +9,6 @@ let package = Package(
     ],
     products: [
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
-        .executable(name: "HelloWorldScheduled", targets: ["HelloWorldScheduled"]),
         .library(name: "HelloWorld", targets: ["HelloWorld"]),
     ],
     dependencies: [
@@ -20,16 +19,6 @@ let package = Package(
     targets: [
         .target(
             name: "HelloWorldAPI",
-            dependencies: [
-                .byName(name: "HelloWorld"),
-                .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
-                .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
-                .product(name: "Backtrace", package: "swift-backtrace"),
-                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
-            ]
-        ),
-        .target(
-            name: "HelloWorldScheduled",
             dependencies: [
                 .byName(name: "HelloWorld"),
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),

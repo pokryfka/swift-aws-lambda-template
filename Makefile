@@ -1,4 +1,4 @@
-DEPLOY_PACKAGES=HelloWorldAPI HelloWorldScheduled
+DEPLOY_PACKAGES=HelloWorldAPI
 
 DOCKER_IMAGE=swift-lambda-builder
 DOCKER_IMAGE_INFO=.build/${DOCKER_IMAGE}.json
