@@ -7,6 +7,11 @@ import NIO
 
 Backtrace.install()
 
+private let recorder = XRayRecorder()
+defer {
+    recorder.shutdown()
+}
+
 private struct HelloWorldIn: Decodable {
     /// time zone identifier, default `UTC`
     let tz: String?
@@ -19,8 +24,6 @@ private struct HelloWorldOut: Encodable {
 private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias In = APIGateway.V2.Request
     typealias Out = APIGateway.V2.Response
-
-    private let recorder = XRayRecorder()
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
         let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
