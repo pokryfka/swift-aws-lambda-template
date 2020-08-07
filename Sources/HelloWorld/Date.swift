@@ -1,22 +1,11 @@
+// TODO: remove dependency on Foundation
 import struct Foundation.Calendar
 import struct Foundation.Date
-import protocol Foundation.LocalizedError
 import struct Foundation.TimeZone
 
 public enum DateError: Error {
     case invalidTimeZone(identifier: String)
     case failedToResolveHour
-}
-
-extension DateError: LocalizedError {
-    public var errorDescription: String? {
-        switch self {
-        case .invalidTimeZone(let identifier):
-            return "Invalid TimeZone identifier: \(identifier)"
-        case .failedToResolveHour:
-            return "Failed to resolve hour"
-        }
-    }
 }
 
 public func hour(on date: Date = Date(), inTimeZone timeZoneIdentifier: String? = nil) throws

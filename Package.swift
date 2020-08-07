@@ -8,13 +8,18 @@ let package = Package(
         .macOS(.v10_14),
     ],
     products: [
+        // lambda handler using default (Foundation) JSON encoder/decoder
         .executable(name: "HelloWorldAPI", targets: ["HelloWorldAPI"]),
+        // lambda handler using PureSwift JSON encoder/decoder
+        .executable(name: "HelloWorldAPIPerf", targets: ["HelloWorldAPIPerf"]),
+        // shared business logic
         .library(name: "HelloWorld", targets: ["HelloWorld"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", .upToNextMajor(from: "0.2.0")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
-        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", from: "0.6.0"),
+        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", .upToNextMinor(from: "0.6.0")),
+        .package(url: "https://github.com/fabianfett/pure-swift-json.git", .upToNextMinor(from: "0.4.0")),
     ],
     targets: [
         .target(
@@ -25,6 +30,16 @@ let package = Package(
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
                 .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+            ]
+        ),
+        .target(
+            name: "HelloWorldAPIPerf",
+            dependencies: [
+                .byName(name: "HelloWorld"),
+                .product(name: "AWSLambdaRuntimeCore", package: "swift-aws-lambda-runtime"),
+                .product(name: "Backtrace", package: "swift-backtrace"),
+                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
+                .product(name: "PureSwiftJSON", package: "pure-swift-json"),
             ]
         ),
         .target(
