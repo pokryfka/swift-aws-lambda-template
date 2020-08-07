@@ -40,6 +40,7 @@ let package = Package(
             name: "HelloWorldAPIPerf",
             dependencies: [
                 .byName(name: "HelloWorld"),
+                .byName(name: "AWSLambdaUtils"),
                 .product(name: "AWSLambdaRuntimeCore", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSXRayRecorder", package: "aws-xray-sdk-swift"),
                 .product(name: "PureSwiftJSON", package: "pure-swift-json"),

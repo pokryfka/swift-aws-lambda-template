@@ -1,5 +1,5 @@
-// import AWSLambdaEvents
 import AWSLambdaRuntimeCore
+import AWSLambdaUtils
 import AWSXRaySDK
 import HelloWorld
 import NIO

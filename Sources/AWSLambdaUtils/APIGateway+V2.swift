@@ -12,8 +12,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import AWSLambdaRuntimeCore
-
 public enum APIGateway {}
 
 extension APIGateway {
