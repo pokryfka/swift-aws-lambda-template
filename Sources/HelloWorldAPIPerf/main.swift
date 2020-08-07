@@ -1,11 +1,8 @@
 // import AWSLambdaEvents
 import AWSLambdaRuntimeCore
 import AWSXRaySDK
-import Backtrace
 import HelloWorld
 import NIO
-
-Backtrace.install()
 
 private struct HelloWorldIn: Decodable {
     let name: String?

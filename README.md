@@ -15,7 +15,6 @@ An opinionated template for deploying serverless functions to [AWS Lambda](https
 
 - [x] build and deploy with single `make deploy`
 - [x] provision all resources using [AWS Cloud​Formation](https://aws.amazon.com/cloudformation/) (with help from [AWS SAM CLI](https://github.com/awslabs/serverless-application-model))
-- [x] printing crash backtraces using [Backtrace](https://github.com/swift-server/swift-backtrace)
 - [x] tracing using [AWS X-Ray SDK for Swift](https://github.com/pokryfka/aws-xray-sdk-swift)
 - [x] CI workflows using [GitHub Actions](https://github.com/features/actions)
 - [x] code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)

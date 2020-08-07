@@ -1,11 +1,8 @@
 import AWSLambdaEvents
 import AWSLambdaRuntime
 import AWSXRaySDK
-import Backtrace
 import HelloWorld
 import NIO
-
-Backtrace.install()
 
 private let recorder = XRayRecorder()
 defer {
