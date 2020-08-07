@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-aws-lambda-template",
     platforms: [
-        .macOS(.v10_14),
+        .macOS(.v10_14), // TODO: remove after swift-aws-lambda-runtime fixes that
     ],
     products: [
         // lambda handler using default (Foundation) JSON encoder/decoder
@@ -22,7 +22,8 @@ let package = Package(
 //        .package(name: "swift-aws-lambda-runtime", path: "../swift-aws-lambda-runtime"),
         .package(url: "https://github.com/pokryfka/swift-aws-lambda-runtime.git", .branch("feature/tracing")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.2.0")),
-        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", .upToNextMinor(from: "0.6.0")),
+        .package(url: "https://github.com/pokryfka/aws-xray-sdk-swift.git", .upToNextMinor(from: "0.6.1")),
+//        .package(name: "aws-xray-sdk-swift", path: "../aws-xray-sdk-swift"),
         .package(url: "https://github.com/fabianfett/pure-swift-json.git", .upToNextMinor(from: "0.4.0")),
     ],
     targets: [
@@ -33,8 +34,7 @@ let package = Package(
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "AWSLambdaEvents", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-//                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
-                .product(name: "AWSXRayRecorder", package: "aws-xray-sdk-swift"),
+                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
             ]
         ),
         .target(
@@ -43,7 +43,6 @@ let package = Package(
                 .byName(name: "HelloWorld"),
                 .product(name: "AWSLambdaRuntimeCore", package: "swift-aws-lambda-runtime"),
                 .product(name: "Backtrace", package: "swift-backtrace"),
-//                .product(name: "AWSXRaySDK", package: "aws-xray-sdk-swift"),
                 .product(name: "AWSXRayRecorder", package: "aws-xray-sdk-swift"),
                 .product(name: "PureSwiftJSON", package: "pure-swift-json"),
             ]

@@ -24,7 +24,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
         let recorder = context.tracer
         let response: Out
         do {
-            response = try recorder.segment(name: "HelloWorldAPIPerfHandler", context: context.baggage) { segment in
+            response = try recorder.segment(name: "HelloWorldAPIPerfHandler", baggage: context.baggage) { segment in
                 var tz: String?
                 if let body = event.body {
                     segment.setMetadata("\(body)", forKey: "in")
@@ -58,8 +58,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             context.logger.error("AnError: \(error)")
             response = APIGateway.V2.Response(statusCode: .internalServerError)
         }
-        return recorder.flush(on: context.eventLoop)
-            .map { _ in response }
+        return context.eventLoop.makeSucceededFuture(response)
     }
 }
 
