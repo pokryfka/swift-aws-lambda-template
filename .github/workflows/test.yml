@@ -23,6 +23,7 @@ jobs:
       run: swift test
 
   test-linux:
+    runs-on: ubuntu-latest  
     strategy:
       matrix:
         images:
