@@ -46,7 +46,7 @@ Resources:
     Properties:
       CodeUri: .build/lambda/HelloWorldAPI-exe.zip
       Handler: Provided
-      Runtime: provided
+      Runtime: provided.al2
       Layers:
         - !Ref HelloWorldAPIFunctionLayer
       Policies:
@@ -70,7 +70,7 @@ Resources:
     Properties:
       CodeUri: .build/lambda/HelloWorldAPIPerf.zip
       Handler: Provided
-      Runtime: provided
+      Runtime: provided.al2
       Policies:
         - AWSXRayDaemonWriteAccess
       Events:
