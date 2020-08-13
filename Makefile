@@ -2,7 +2,6 @@ DEPLOY_PACKAGES=HelloWorldAPI HelloWorldAPIPerf
 
 DOCKER_IMAGE=swift-lambda-builder
 DOCKER_IMAGE_INFO=.build/${DOCKER_IMAGE}.json
-SWIFT_RUNTIME_LAYER=.build/lambda/swift.zip
 SWIFT_RELEASE_OPTS=-c release -Xswiftc -g
 SAM_CONFIG=samconfig.toml
 
@@ -48,14 +47,6 @@ package_executables: ${DOCKER_IMAGE_INFO} build_linux
 	  --workdir "/src/" \
 	  ${DOCKER_IMAGE} \
 	  bash -c "for executable in ${DEPLOY_PACKAGES}; do scripts/package.sh \$${executable}; done"
-
-${SWIFT_RUNTIME_LAYER}: ${DOCKER_IMAGE_INFO}
-	docker run \
-	  --rm \
-	  --volume "$(shell pwd)/:/src" \
-	  --workdir "/src/" \
-	  ${DOCKER_IMAGE} \
-	  scripts/package.sh swift true
 
 .PHONY: package_libs
 package_libs: ${SWIFT_RUNTIME_LAYER}

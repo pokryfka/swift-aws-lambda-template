@@ -1,24 +1,24 @@
 import AWSLambdaEvents
 import AWSLambdaRuntime
 import AWSXRaySDK
-import Backtrace
 import HelloWorld
 import NIO
 
-Backtrace.install()
-
+#if false // use recorder provided in the context
 private let recorder = XRayRecorder()
 defer {
     recorder.shutdown()
 }
+#endif
 
 private struct HelloWorldIn: Decodable {
-    /// time zone identifier, default `UTC`
-    let tz: String?
+    let name: String?
+    let hour: Int?
 }
 
 private struct HelloWorldOut: Encodable {
     let message: Greeting
+    let name: String?
 }
 
 private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
@@ -26,39 +26,47 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias Out = APIGateway.V2.Response
 
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
-        let traceContext: XRayRecorder.TraceContext = (try? .init(tracingHeader: context.traceID)) ?? .init()
         let response: Out
         do {
-            response = try recorder.segment(name: "HelloWorldAPIHandler", context: traceContext) { segment in
-                var tz: String?
+            response = try context.tracer.segment(name: "HelloWorldAPIHandler", baggage: context.baggage) { segment in
+                segment.setHTTPRequest(method: event.context.http.method.rawValue,
+                                       url: "https://\(event.context.domainName)/\(event.context.http.path)",
+                                       userAgent: event.context.http.userAgent,
+                                       clientIP: event.context.http.sourceIp)
+                segment.setAnnotation(event.context.stage, forKey: "stage")
+                let input: HelloWorldIn
                 if let body = event.body {
-                    let input = try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
-                    tz = input.tz
+                    input = try segment.subsegment(name: "DecodePayload") { _ in
+                        try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
+                    }
+                } else {
+                    input = HelloWorldIn(name: nil, hour: nil)
                 }
-                let greetingHour = try segment.subsegment(name: "Hour") { _ in try hour(inTimeZone: tz) }
-                let greetingMessage = try segment.subsegment(name: "Greeting") { _ in
-                    try greeting(atHour: greetingHour)
-                }
-                let output = HelloWorldOut(message: greetingMessage)
+                let output = HelloWorldOut(message: try greeting(atHour: input.hour), name: input.name)
                 var body = try self.encoder.encode(output, using: context.allocator)
-                return APIGateway.V2.Response(
+                let contentLength = body.readableBytes
+                let out = APIGateway.V2.Response(
                     statusCode: HTTPResponseStatus.ok,
                     headers: ["Content-Type": "application/json"],
-                    body: body.readString(length: body.readableBytes)
+                    body: body.readString(length: contentLength)
                 )
+                segment.setHTTPResponse(status: out.statusCode.code, contentLength: UInt(contentLength))
+                return out
             }
         } catch let error as DecodingError {
             context.logger.error("DecodingError: \(error)")
-            response = APIGateway.V2.Response(statusCode: .badRequest)
-        } catch DateError.invalidTimeZone(let identifier) {
-            context.logger.error("DateError.invalidTimeZone: \(identifier)")
             response = APIGateway.V2.Response(statusCode: .badRequest)
         } catch {
             context.logger.error("AnError: \(error)")
             response = APIGateway.V2.Response(statusCode: .internalServerError)
         }
+        #if false // use recorder provided in the context
+        // flush the tracer after each invocation and return the invocation result
         return recorder.flush(on: context.eventLoop)
             .map { _ in response }
+        #else
+        return context.eventLoop.makeSucceededFuture(response)
+        #endif
     }
 }
 

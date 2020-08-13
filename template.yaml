@@ -32,23 +32,23 @@ Resources:
   ApiGateway:
     Type: AWS::Serverless::HttpApi
 
-  SwiftRuntimeLayer:
+  HelloWorldAPIFunctionLayer:
     Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
-    Properties:      
+    Properties:
       Description: Swift Linux Runtime
-      ContentUri: .build/lambda/swift.zip
+      ContentUri: .build/lambda/HelloWorldAPI-libs.zip
       CompatibleRuntimes:
         - provided
       RetentionPolicy: Delete
-    
+
   HelloWorldAPIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .build/lambda/HelloWorldAPI.zip
+      CodeUri: .build/lambda/HelloWorldAPI-exe.zip
       Handler: Provided
       Runtime: provided
       Layers:
-        - !Ref SwiftRuntimeLayer
+        - !Ref HelloWorldAPIFunctionLayer
       Policies:
         - AWSXRayDaemonWriteAccess
       Events:
@@ -71,8 +71,6 @@ Resources:
       CodeUri: .build/lambda/HelloWorldAPIPerf.zip
       Handler: Provided
       Runtime: provided
-      Layers:
-        - !Ref SwiftRuntimeLayer
       Policies:
         - AWSXRayDaemonWriteAccess
       Events:
@@ -90,11 +88,6 @@ Resources:
             Method: post
 
 Outputs:
-  SwiftRuntimeLayer:
-    Description: Swift Linux Runtime Lambda Layer
-    Value: !Ref SwiftRuntimeLayer
-  
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:

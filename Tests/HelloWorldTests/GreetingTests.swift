@@ -4,6 +4,7 @@ import XCTest
 
 final class GreetingTests: XCTestCase {
     func testGreetings() {
+        XCTAssertEqual(try greeting(), Greeting.default)
         for hour in 0 ..< 6 {
             XCTAssertEqual(try greeting(atHour: hour), Greeting.night)
         }
