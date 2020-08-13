@@ -42,23 +42,23 @@ Resources:
     Properties:
       StageName: dev
 
-  HelloWorldAPIFunctionLayer:
-    Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
-    Properties:
-      Description: Swift Linux Runtime
-      ContentUri: .build/lambda/HelloWorldAPI-libs.zip
-      CompatibleRuntimes:
-        - provided
-      RetentionPolicy: Delete
+#  HelloWorldAPIFunctionLayer:
+#    Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
+#    Properties:
+#      Description: Swift Linux Runtime
+#      ContentUri: .build/lambda/HelloWorldAPI-libs.zip
+#      CompatibleRuntimes:
+#        - provided
+#      RetentionPolicy: Delete
 
   HelloWorldAPIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .build/lambda/HelloWorldAPI-exe.zip
+#      CodeUri: .build/lambda/HelloWorldAPI-exe.zip
       Handler: Provided
       Runtime: provided.al2
-      Layers:
-        - !Ref HelloWorldAPIFunctionLayer
+#      Layers:
+#        - !Ref HelloWorldAPIFunctionLayer
       Policies:
         - AWSXRayDaemonWriteAccess
       Events:
@@ -74,11 +74,13 @@ Resources:
             ApiId: !Ref ProdApiGateway
             Path: /hello
             Method: post
+    Metadata:
+      BuildMethod: makefile
 
   HelloWorldAPIPerfFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .build/lambda/HelloWorldAPIPerf.zip
+#      CodeUri: .build/lambda/HelloWorldAPIPerf.zip
       Handler: Provided
       Runtime: provided.al2
       Policies:
@@ -96,6 +98,8 @@ Resources:
             ApiId: !Ref DevApiGateway
             Path: /hello
             Method: post
+    Metadata:
+      BuildMethod: makefile
 
 Outputs:
   # Find out more about other implicit resources you can reference within SAM

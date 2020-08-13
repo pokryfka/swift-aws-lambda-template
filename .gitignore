@@ -2,4 +2,5 @@
 .build
 .swiftpm
 Package.resolved
+.aws-sam
 samconfig.toml
