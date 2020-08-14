@@ -23,7 +23,7 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
         do {
             response = try context.tracer.segment(name: "HelloWorldAPIPerfHandler", baggage: context.baggage) { segment in
                 segment.setHTTPRequest(method: event.context.http.method.rawValue,
-                                       url: "https://\(event.context.domainName)/\(event.context.http.path)",
+                                       url: "https://\(event.context.domainName)\(event.context.http.path)",
                                        userAgent: event.context.http.userAgent,
                                        clientIP: event.context.http.sourceIp)
                 segment.setAnnotation(event.context.stage, forKey: "stage")
@@ -36,7 +36,9 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
                     input = HelloWorldIn(name: nil, hour: nil)
                 }
                 let output = HelloWorldOut(message: try greeting(atHour: input.hour), name: input.name)
-                var body = try self.encoder.encode(output, using: context.allocator)
+                var body = try segment.subsegment(name: "EncodeResult") { _ in
+                    try self.encoder.encode(output, using: context.allocator)
+                }
                 let contentLength = body.readableBytes
                 let out = APIGateway.V2.Response(
                     statusCode: HTTPResponseStatus.ok,
