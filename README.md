@@ -15,7 +15,7 @@ An opinionated template for deploying serverless functions to [AWS Lambda](https
 
 - [x] build and deploy with single `make deploy`
 - [x] provision all resources using [AWS Cloud​Formation](https://aws.amazon.com/cloudformation/) (with help from [AWS SAM CLI](https://github.com/awslabs/serverless-application-model))
-- [x] tracing using [AWS X-Ray SDK for Swift](https://github.com/pokryfka/aws-xray-sdk-swift)
+- [x] ~~tracing using [AWS X-Ray SDK for Swift](https://github.com/pokryfka/aws-xray-sdk-swift)~~ TODO: restore
 - [x] CI workflows using [GitHub Actions](https://github.com/features/actions)
 - [x] code formatting using [swiftformat](https://github.com/nicklockwood/SwiftFormat)
 - [x] generate documentation using [swift-doc](https://github.com/SwiftDocOrg/swift-doc)
@@ -39,12 +39,18 @@ as well as a [AWS SAM template](https://docs.aws.amazon.com/serverless-applicati
 
 Since *SAM CLI* does not support Swift, a [Docker](https://docs.docker.com/docker-for-mac/install/) image is created and used to cross compile and package Swift code to run in *AWS Lambda* environment.
 
+## Packages
+
+requires SAM CLI 1.1.0
+
+```
+sam build HelloWorldAPIFunction
+```
+
 ## Configuration
 
 - `Package.swift` - [Swift Package Manager](https://swift.org/package-manager/) manifest file defining the package’s name, its contents and dependencies
-
 - `template.yaml` - [AWS SAM Template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification.html) defining the application's AWS resources
-
 - `samconfig.toml` - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html) project-level configuration file
 
 - [Swift AWS Lambda Runtime Configuration](https://github.com/swift-server/swift-aws-lambda-runtime) can be fine tuned using environment variables
@@ -138,9 +144,3 @@ Note [github-wiki-publish-action](https://github.com/SwiftDocOrg/github-wiki-pub
 
 - A wiki with at least one page in it
 - A secret named `GH_PERSONAL_ACCESS_TOKEN` with a Github personal access token with "repo" authorization
-
-## References
-
-- [Introducing Swift AWS Lambda Runtime](https://swift.org/blog/aws-lambda-runtime) by Tom Dordon
-- [Getting started with Swift on AWS Lambda](https://fabianfett.de/getting-started-with-swift-aws-lambda-runtime) by Fabian Fett
-- [AWS SDK Swift](https://github.com/swift-aws/aws-sdk-swift)

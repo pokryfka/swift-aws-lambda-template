@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   swift-aws-lambda-template
 
-  Sample SAM Template for swift-aws-lambda-template
+  SAM Template for swift-aws-lambda-template
 
 Parameters:
   StageName:
@@ -32,15 +32,10 @@ Globals:
         LOG_LEVEL: !Ref LogLevel
 
 Resources:
-  ProdApiGateway:
+  ApiGateway:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref StageName
-
-  DevApiGateway:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      StageName: dev
 
 #  HelloWorldAPIFunctionLayer:
 #    Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
@@ -65,37 +60,13 @@ Resources:
         HelloWorldGetEvent:
           Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
           Properties:
-            ApiId: !Ref ProdApiGateway
+            ApiId: !Ref ApiGateway
             Path: /hello
             Method: get
         HelloWorldPostEvent:
           Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            ApiId: !Ref ProdApiGateway
-            Path: /hello
-            Method: post
-    Metadata:
-      BuildMethod: makefile
-
-  HelloWorldAPIPerfFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-#      CodeUri: .build/lambda/HelloWorldAPIPerf.zip
-      Handler: Provided
-      Runtime: provided.al2
-      Policies:
-        - AWSXRayDaemonWriteAccess
-      Events:
-        HelloWorldGetEvent:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
-          Properties:
-            ApiId: !Ref DevApiGateway
-            Path: /hello
-            Method: get
-        HelloWorldPostEvent:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            ApiId: !Ref DevApiGateway
+            ApiId: !Ref ApiGateway
             Path: /hello
             Method: post
     Metadata:
@@ -106,13 +77,10 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
     Description: "API Gateway endpoint URL for for Hello World function"
-    Value: !Sub "https://${ProdApiGateway}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/hello"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/hello"
   HelloWorldAPIFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldAPIFunction.Arn
   HelloWorldAPIFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldAPIFunction.Arn
-  HelloWorldPerfApi:
-    Description: "API Gateway endpoint URL for for Hello World Perf function"
-    Value: !Sub "https://${DevApiGateway}.execute-api.${AWS::Region}.${AWS::URLSuffix}/dev/hello"

@@ -1,15 +1,7 @@
-import AWSLambdaEvents
-import AWSLambdaRuntime
-import AWSXRaySDK
+import AWSLambdaRuntimeCore
+import AWSLambdaUtils
 import HelloWorld
 import NIO
-
-#if false // use recorder provided in the context
-private let recorder = XRayRecorder()
-defer {
-    recorder.shutdown()
-}
-#endif
 
 private struct HelloWorldIn: Decodable {
     let name: String?
@@ -25,36 +17,33 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
     typealias In = APIGateway.V2.Request
     typealias Out = APIGateway.V2.Response
 
+    init(context: Lambda.InitializationContext) {
+        context.logger.info("init")
+    }
+
+    func shutdown(context: AWSLambdaRuntimeCore.Lambda.ShutdownContext) -> NIO.EventLoopFuture<Void> {
+        context.logger.info("shutdown")
+        return context.eventLoop.makeSucceededFuture(())
+    }
+
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
+        context.logger.debug("handle \(event)")
         let response: Out
         do {
-            response = try context.tracer.segment(name: "HelloWorldAPIDefHandler", baggage: context.baggage) { segment in
-                segment.setHTTPRequest(method: event.context.http.method.rawValue,
-                                       url: "https://\(event.context.domainName)\(event.context.http.path)",
-                                       userAgent: event.context.http.userAgent,
-                                       clientIP: event.context.http.sourceIp)
-                segment.setAnnotation(event.context.stage, forKey: "stage")
-                let input: HelloWorldIn
-                if let body = event.body {
-                    input = try segment.subsegment(name: "DecodePayload") { _ in
-                        try self.decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
-                    }
-                } else {
-                    input = HelloWorldIn(name: nil, hour: nil)
-                }
-                let output = HelloWorldOut(message: try greeting(atHour: input.hour), name: input.name)
-                var body = try segment.subsegment(name: "EncodeResult") { _ in
-                    try self.encoder.encode(output, using: context.allocator)
-                }
-                let contentLength = body.readableBytes
-                let out = APIGateway.V2.Response(
-                    statusCode: HTTPResponseStatus.ok,
-                    headers: ["Content-Type": "application/json"],
-                    body: body.readString(length: contentLength)
-                )
-                segment.setHTTPResponse(status: out.statusCode.code, contentLength: UInt(contentLength))
-                return out
+            let input: HelloWorldIn
+            if let body = event.body {
+                input = try decoder.decode(HelloWorldIn.self, from: ByteBuffer(string: body))
+            } else {
+                input = HelloWorldIn(name: nil, hour: nil)
             }
+            let output = HelloWorldOut(message: try greeting(atHour: input.hour), name: input.name)
+            var body = try encoder.encode(output, using: context.allocator)
+            let contentLength = body.readableBytes
+            response = APIGateway.V2.Response(
+                statusCode: HTTPResponseStatus.ok,
+                headers: ["Content-Type": "application/json"],
+                body: body.readString(length: contentLength)
+            )
         } catch let error as DecodingError {
             context.logger.error("DecodingError: \(error)")
             response = APIGateway.V2.Response(statusCode: .badRequest)
@@ -62,14 +51,8 @@ private struct HelloWorldAPIHandler: EventLoopLambdaHandler {
             context.logger.error("AnError: \(error)")
             response = APIGateway.V2.Response(statusCode: .internalServerError)
         }
-        #if false // use recorder provided in the context
-        // flush the tracer after each invocation and return the invocation result
-        return recorder.flush(on: context.eventLoop)
-            .map { _ in response }
-        #else
         return context.eventLoop.makeSucceededFuture(response)
-        #endif
     }
 }
 
-Lambda.run(HelloWorldAPIHandler())
+Lambda.run(HelloWorldAPIHandler.init)
