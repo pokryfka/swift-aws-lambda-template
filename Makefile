@@ -1,8 +1,9 @@
-DEPLOY_PACKAGES := HelloWorldAPI HelloWorldAPIPerf
+DEPLOY_PACKAGES := HelloWorldAPI
 
 DOCKER_IMAGE := swift-lambda-builder
 DOCKER_IMAGE_INFO := .build/${DOCKER_IMAGE}.json
-SWIFT_RELEASE_OPTS := -c release -Xswiftc -g
+SWIFT_RELEASE_OPTS := -c release
+#SWIFT_RELEASE_OPTS := -c release -Xswiftc -static-stdlib -Xswiftc -lDispatchStubs
 SAM_CONFIG := samconfig.toml
 
 .PHONY: all
