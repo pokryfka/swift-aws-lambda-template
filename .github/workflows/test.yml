@@ -28,6 +28,7 @@ jobs:
       matrix:
         images:
         - swift:5.2-amazonlinux2
+        - swift:5.3-amazonlinux2
     container:
       image: ${{ matrix.images }}
 
@@ -41,7 +42,5 @@ jobs:
       run: swift build
     - name: Print shared libraries of HelloWorldAPI
       run: ldd .build/debug/HelloWorldAPI
-    - name: Print shared libraries of HelloWorldAPIPerf
-      run: ldd .build/debug/HelloWorldAPIPerf
     - name: Run tests
       run: swift test --enable-test-discovery

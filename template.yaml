@@ -3,12 +3,15 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   swift-aws-lambda-template
 
-  Sample SAM Template for swift-aws-lambda-template
+  SAM Template for swift-aws-lambda-template
 
 Parameters:
+  StageName:
+    Type: String
+    Default: prod
   LogLevel:
     Type: String
-    Description: The CloudFront distribution price class.
+    Description: Log level.
     Default: 'info'
     AllowedValues:
       - 'trace'
@@ -31,24 +34,26 @@ Globals:
 Resources:
   ApiGateway:
     Type: AWS::Serverless::HttpApi
-
-  HelloWorldAPIFunctionLayer:
-    Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
     Properties:
-      Description: Swift Linux Runtime
-      ContentUri: .build/lambda/HelloWorldAPI-libs.zip
-      CompatibleRuntimes:
-        - provided
-      RetentionPolicy: Delete
+      StageName: !Ref StageName
+
+#  HelloWorldAPIFunctionLayer:
+#    Type: AWS::Serverless::LayerVersion # see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesslayerversion
+#    Properties:
+#      Description: Swift Linux Runtime
+#      ContentUri: .build/lambda/HelloWorldAPI-libs.zip
+#      CompatibleRuntimes:
+#        - provided
+#      RetentionPolicy: Delete
 
   HelloWorldAPIFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .build/lambda/HelloWorldAPI-exe.zip
+#      CodeUri: .build/lambda/HelloWorldAPI-exe.zip
       Handler: Provided
-      Runtime: provided
-      Layers:
-        - !Ref HelloWorldAPIFunctionLayer
+      Runtime: provided.al2
+#      Layers:
+#        - !Ref HelloWorldAPIFunctionLayer
       Policies:
         - AWSXRayDaemonWriteAccess
       Events:
@@ -64,35 +69,15 @@ Resources:
             ApiId: !Ref ApiGateway
             Path: /hello
             Method: post
-
-  HelloWorldAPIPerfFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: .build/lambda/HelloWorldAPIPerf.zip
-      Handler: Provided
-      Runtime: provided
-      Policies:
-        - AWSXRayDaemonWriteAccess
-      Events:
-        HelloWorldGetEvent:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
-          Properties:
-            ApiId: !Ref ApiGateway
-            Path: /hello2
-            Method: get
-        HelloWorldPostEvent:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            ApiId: !Ref ApiGateway
-            Path: /hello2
-            Method: post
+    Metadata:
+      BuildMethod: makefile
 
 Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
     Description: "API Gateway endpoint URL for for Hello World function"
-    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/hello"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/hello"
   HelloWorldAPIFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldAPIFunction.Arn

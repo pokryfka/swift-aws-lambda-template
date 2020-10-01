@@ -15,7 +15,7 @@ enum GreetingError: Error {
     case invalidHour(Int)
 }
 
-/// Returns an appropriate greeting message as specified time of the day.
+/// Returns an appropriate greeting message at specified time of the day.
 ///
 /// - Parameter hour: hour, 0-23
 /// - Throws: may throw `GreetingError.invalidHour` if the hour is not valid
