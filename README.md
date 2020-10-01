@@ -1,6 +1,6 @@
 # Swift AWS Lambda Template
 
-![Build](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Build/badge.svg)
+![Build](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Test/badge.svg)
 ![Package](https://github.com/pokryfka/swift-aws-lambda-template/workflows/Package/badge.svg)
 
 An opinionated template for deploying serverless functions to [AWS Lambda](https://aws.amazon.com/lambda/) using [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime/).
@@ -38,14 +38,6 @@ The template contains code with two [AWS Lambda](https://aws.amazon.com/lambda/)
 as well as a [AWS SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification.html) used to deploy them using [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html).
 
 Since *SAM CLI* does not support Swift, a [Docker](https://docs.docker.com/docker-for-mac/install/) image is created and used to cross compile and package Swift code to run in *AWS Lambda* environment.
-
-## Packages
-
-requires SAM CLI 1.1.0
-
-```
-sam build HelloWorldAPIFunction
-```
 
 ## Configuration
 
